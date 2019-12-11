@@ -6,7 +6,6 @@
 # 
 #    http://shiny.rstudio.com/
 
-# dasfasdf
 library(shiny)
 library(shinyBS)
 library(showtext)
@@ -20,7 +19,7 @@ showtext_opts(dpi = 112)
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
   # Application title
-  titlePanel(h1("Find me Find you", align = "center")),
+  titlePanel(h1(p(strong("Find me Find you")), align = "center")),
   fluidRow(column(width = 12,
     mainPanel(
       h6("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다"),
@@ -78,7 +77,7 @@ shinyUI(fluidPage(
   fluidRow(height = 300,
     column(width = 2, offset = 1,
       wellPanel(        
-        plotOutput(outputId = "Test_Score_Plot1")
+        plotlyOutput(outputId = "Test_Score_Plot1")
         # style = "padding-bottom: 300px"
       )
     )
