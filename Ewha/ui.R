@@ -9,6 +9,7 @@
 library(shiny)
 library(shinyBS)
 library(showtext)
+library(plotly)
 
 
 # configure font
@@ -75,33 +76,31 @@ shinyUI(fluidPage(
     # )
   ),
   fluidRow(height = 300,
-    column(width = 2, offset = 1,
-      wellPanel(        
-        plotlyOutput(outputId = "Test_Score_Plot1")
-        # style = "padding-bottom: 300px"
-      )
+    column(width = 2, offset = 1,   
+      plotlyOutput(outputId = "Test_Score_Plot")
     )
     ,
     column(width = 4, offset = 0,
-      wellPanel(
-        verticalLayout(
-          splitLayout(
-            plotOutput(outputId = "Test_Score_Plot2"),
-            plotOutput(outputId = "Test_Score_Plot3")
-          ),
-          sliderInput(
-            inputId = "Select_Week", 
-            label = "주차 선택",
-            min = 0,
-            max = 16,
-            value = 1,
-            post = "주차")
-        ),
-        actionButton(
-          inputId = "Pop-Up",
-          label = "요약 보기"
-          )
+      splitLayout(
+        plotlyOutput(outputId = "Online_QNA_Plot"),
+        plotlyOutput(outputId = "Online_Team_Plot")
       ),
+
+      sliderInput(
+        inputId = "Select_Week", 
+        label = "주차 선택",
+        min = 0,
+        max = 15,
+        value = 1,
+        post = "주차",
+        width = "200%"
+      ),
+
+      actionButton(
+        inputId = "Pop-Up",
+        label = "요약 보기"
+      )
+    ,
       mainPanel(
         bsModal(
           id = "Description", 
