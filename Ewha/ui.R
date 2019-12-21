@@ -21,7 +21,7 @@ showtext_opts(dpi = 112)
 shinyUI(fluidPage(
   # Application title
   titlePanel(h1(p(strong("Find me Find you")), align = "center")),
-  fluidRow(column(width = 12,
+  fluidRow(column(width = 8, offset = 2,
       h6("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다"),
       #br(),
       h6("먼저 [모드(Mode)]를 선택합니다."),
@@ -80,35 +80,40 @@ shinyUI(fluidPage(
     # )
   ),
   fluidRow(height = 300,
-    column(width = 3, offset = 1,   
-      verticalLayout(
-        plotlyOutput(outputId = "Test_Score_Plot"),
-        splitLayout(
-          verbatimTextOutput(outputId = "Mid_Test_Score_Summary"),
-          verbatimTextOutput(outputId = "Final_Test_Score_Summary")
+    column(width = 3, offset = 1,
+      wellPanel(
+        verticalLayout(
+          plotlyOutput(outputId = "Test_Score_Plot"),
+          splitLayout(
+            verbatimTextOutput(outputId = "Mid_Test_Score_Summary"),
+            verbatimTextOutput(outputId = "Final_Test_Score_Summary")
+          )
         )
       )
     )
     ,
-    column(width = 6, offset = 0,
-      #splitLayout(
-      column(width = 6, 
-        verticalLayout(
-          plotlyOutput(outputId = "Online_QNA_Plot"),
-          splitLayout(
-            div(style = "width:100%;", verbatimTextOutput(outputId = "Online_QNA_Post_Summary")),
-            div(style = "width:100%;", verbatimTextOutput(outputId = "Online_QNA_Reply_Summary"))
+    column(width = 6, offset = 0, 
+      wellPanel(
+        fluidRow(
+          column(width = 6,
+            verticalLayout(
+              plotlyOutput(outputId = "Online_QNA_Plot"),
+              splitLayout(
+                verbatimTextOutput(outputId = "Online_QNA_Post_Summary"),
+                verbatimTextOutput(outputId = "Online_QNA_Reply_Summary")
+              )
+            ),
+          ),
+          column(width = 6,
+            verticalLayout(
+              plotlyOutput(outputId = "Online_Team_Plot"),
+              splitLayout(
+                verbatimTextOutput(outputId = "Online_Team_Post_Summary"),
+                verbatimTextOutput(outputId = "Online_Team_Reply_Summary")            
+              )
+            )          
           )
-        ),      
-      ),
-      column(width = 6,
-        verticalLayout(
-          plotlyOutput(outputId = "Online_Team_Plot"),
-          splitLayout(
-            verbatimTextOutput(outputId = "Online_Team_Post_Summary"),
-            verbatimTextOutput(outputId = "Online_Team_Reply_Summary")            
-          )
-        )       
+        )
       )
     )
   ),
@@ -132,76 +137,11 @@ shinyUI(fluidPage(
       title = h2(p(strong("요약보기"))), 
       trigger = "Pop-Up",
       size = "large",
-      titlePanel(
-        div(style = "margin-left: 5%;", 
-            h3(p(strong("지난 학기 수강생 학습활동 요약보기"))))
-      ),
+      uiOutput(outputId = "Pop_Up_title"),
       br(),
-      div(style = "margin-left: 5%;",
-          h5("성적 그룹별 추이, 나와 유사한 학습자 추이, 최고점/최저점 학습자 추이는 학기 종료시점의 총점을 기준으로 제공됩니다.")),
-      fluidRow(
-        column(width = 12, align = "center",
-          div(
-            style = "width: 250px; margin-left: 60%;",
-            selectInput( 
-              inputId = "Description_Mode", 
-              label = div(style = "margin-left: 60%;", h4(p(strong("Mode")))),
-              choice = c("성적 그룹별 추이 보기", 
-                        "전체 학습자 추이 보기", 
-                        "나와 유사한 학습자 추이 보기",
-                        "최고점 학습자 추이 보기",
-                        "최저점 학습자 추이 보기")
-            )
-          )
-        )
-      )
-      ,
-      fluidRow(
-        column(width = 2, align = "center",
-          verticalLayout(
-            #
-            div(style = "width: 35%; margin-left: 30px; margin-top: 70px; text-align: center;", 
-              h5(p(strong("Q&A")))
-            ),
-            div(style = "width: 60%; margin-left: 30px; margin-top: -20px; text-align: center;", 
-              h5(p(strong("게시글 수")))
-            ),
-
-            #
-            div(style = "width: 35%; margin-left: 30px; margin-top: 125px; text-align: center;", 
-              h5(p(strong("Q&A")))
-            ),
-            div(style = "width: 60%; margin-left: 30px; margin-top: -20px; text-align: center;", 
-              h5(p(strong("댓글 수")))
-            ),
-
-            #
-            div(style = "width: 35%; margin-left: 30px; margin-top: 125px; text-align: center;", 
-              h5(p(strong("팀플")))
-            ),
-            div(style = "width: 60%; margin-left: 30px; margin-top: -20px; text-align: center;", 
-              h5(p(strong("게시글 수")))
-            ),
-
-            #
-            div(style = "width: 35%; margin-left: 30px; margin-top: 125px; text-align: center;", 
-              h5(p(strong("팀플")))
-            ),
-            div(style = "width: 60%; margin-left: 30px; margin-top: -20px; text-align: center;", 
-              h5(p(strong("댓글 수")))
-            )
-          )
-        ),
-        column(width = 10,
-          verticalLayout(
-            plotlyOutput(outputId = "Weekly_Mean_QNA_Post_Plot", height = "170px"),
-            plotlyOutput(outputId = "Weekly_Mean_QNA_Reply_Plot", height = "170px"),
-            plotlyOutput(outputId = "Weekly_Mean_Team_Post_Plot", height = "170px"),
-            plotlyOutput(outputId = "Weekly_Mean_Team_Reply_Plot", height = "170px")
-          )
-          # plotlyOutput(outputId = "Weekly_Summary_Plot")
-        )
-      )
+      uiOutput(outputId = "Pop_Up_Description"),
+      uiOutput(outputId = "Pop_Up_SelectInput"),
+      uiOutput(outputId = "Pop_Up_Plot")
     )
   )       
 ))
