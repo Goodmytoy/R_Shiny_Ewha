@@ -15,6 +15,7 @@ library(ggplot2)
 library(shiny)
 library(htmlwidgets)
 library(showtext)
+library(shinyBS)
 
 options(shiny.usecairo = FALSE)
 # configure font
@@ -67,10 +68,10 @@ this_year_score = this_test_score[this_weekly_score, on = c("수강생", "실험
 # 3. Melt Data
 # 3.1 Last Year Data
 long_last_test_score = melt(last_test_score, 
-                         id.vars = c("수강생", "실험집단", "성적등급"), 
-                         measure.vars = c("중간점수", "기말점수"), 
-                         variable.name = "type", 
-                         value.name = "score")
+                            id.vars = c("수강생", "실험집단", "성적등급"), 
+                            measure.vars = c("중간점수", "기말점수"), 
+                            variable.name = "type", 
+                            value.name = "score")
 
 long_last_weekly_score = melt(last_year_score,
                               id.vars = c("수강생", "실험집단", "성적등급"),
@@ -85,24 +86,24 @@ long_last_year_qna = melt(long_last_weekly_score,
                           value.name = "count")
 
 long_last_year_team = melt(long_last_weekly_score,
-                          id.vars = c("수강생", "실험집단", "성적등급", "week"),
-                          measure.vars = c("팀플 게시글 수", "팀플 댓글 수"),
-                          variable.name = "type",
-                          value.name = "count")
+                           id.vars = c("수강생", "실험집단", "성적등급", "week"),
+                           measure.vars = c("팀플 게시글 수", "팀플 댓글 수"),
+                           variable.name = "type",
+                           value.name = "count")
 
 # 3.2 This Year Data
 long_this_test_score = melt(this_test_score, 
-                         id.vars = c("수강생", "실험집단"), 
-                         measure.vars = c("중간점수"), 
-                         variable.name = "type", 
-                         value.name = "score")
+                            id.vars = c("수강생", "실험집단"), 
+                            measure.vars = c("중간점수"), 
+                            variable.name = "type", 
+                            value.name = "score")
 long_this_test_score[,"성적등급" := "NA"]
 
 long_this_weekly_score = melt(this_year_score,
-                            id.vars = c("수강생", "실험집단"),
-                            measure.vars = patterns("^y[0-9]{1,2}1$", "^y[0-9]{1,2}2$", "^y[0-9]{1,2}3$", "^y[0-9]{1,2}4$"),
-                            variable.name = "week",
-                            value.name = c("Q&A 게시글 수", "Q&A 댓글 수", "팀플 게시글 수", "팀플 댓글 수"))
+                              id.vars = c("수강생", "실험집단"),
+                              measure.vars = patterns("^y[0-9]{1,2}1$", "^y[0-9]{1,2}2$", "^y[0-9]{1,2}3$", "^y[0-9]{1,2}4$"),
+                              variable.name = "week",
+                              value.name = c("Q&A 게시글 수", "Q&A 댓글 수", "팀플 게시글 수", "팀플 댓글 수"))
 long_this_weekly_score[,"성적등급" := "NA"]
 
 long_this_year_qna = melt(long_this_weekly_score,
@@ -187,6 +188,10 @@ long_this_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글
 javascript = "function(el, x){
                 el.on('plotly_click', function(data) {
                   var plot_len = document.getElementsByClassName('scatterlayer').length
+                  if(plot_len > 6){
+                    plot_len = plot_len - 4
+                  }
+                  
                   var point_arr = new Array(plot_len);
                   var old_point_arr = new Array(plot_len);
                   var plotly_div_arr = new Array(plot_len);
@@ -218,44 +223,37 @@ javascript = "function(el, x){
                     plotly_div_arr[i] =  document.getElementsByClassName('plotly')[i];
                   }
                   
-
                   for(i=0; i<plot_len; i++) {
                     if (plotly_div_arr[i].backup !== undefined) {
-                      old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
-                      if (old_point_arr[0] !== undefined) {
-                        old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
+                      if ( plotly_div_arr[i].backup.curveNumber < document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length){
+                        console.log('plotly_div_arr[', i, '].backup curveNumber : ', plotly_div_arr[i].backup.curveNumber);
+                        console.log('plotly_div_arr[', i, '].backup point_num : ', plotly_div_arr[i].backup.pointNumber);    
+    
+                        old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
+                        if (old_point_arr[0] !== undefined) {
+                          old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
+                        } 
                       }
                     } 
                   }
                   
                   for(i=0; i<plot_len; i++) {
                     plotly_div_arr[i].backup = {curveNumber: curve_num,
-                                            pointNumber: point_num,
-                                            d: point_arr[i].attributes['d'].value,
-                                            style: point_arr[i].attributes['style'].value
-                                            };
+                                                pointNumber: point_num,
+                                                d: point_arr[i].attributes['d'].value,
+                                                style: point_arr[i].attributes['style'].value
+                                                };
                   }
-
                   for(i=0; i<plot_len; i++) {
                     point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
                   }
                 });
               }"
 
-test_plot = fn_draw_strip_plot(data = long_last_test_score,
-                               this_data = long_this_test_score,
-                               y = "score",
-                               type_vec = c("중간점수", "기말점수"),
-                               pal = pal,
-                               my_data = my_data, jitter = 0.1)
-test_plot %>%
-  config(displayModeBar = F) %>%
-  onRender(javascript)
-
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-
+  
   #Dynamic Slider Input (max_week)
   output$max_week_slider_input = renderUI({
     if(input$Mode == "지난 학기 수강생"){
@@ -263,7 +261,7 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       max_week = max(as.numeric(long_this_year_qna$week))
     }
-
+    
     sliderInput(
       inputId = "Select_Week", 
       # label = h4(p(strong("주차 선택"))),
@@ -275,8 +273,8 @@ shinyServer(function(input, output) {
       width = "100%"
     )
   })
-
-
+  
+  
   ### Text Output (Mean, Standard Deviance)
   
   ## 시험점수 (Test Score)
@@ -287,14 +285,14 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       test_score_data = long_this_test_score
     }
-
+    
     test_score_data = test_score_data[type == "중간점수",]  
-
+    
     cat(paste0("<중간점수> \n",
                "평균 = ", round(mean(test_score_data$score),2), "점\n", 
                "표준편차 = ", round(sd(test_score_data$score),2)))
   })
-
+  
   # 기말점수 (Mid Test Score)
   output$Final_Test_Score_Summary = renderPrint({
     if(input$Mode == "지난 학기 수강생"){
@@ -302,14 +300,14 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       test_score_data = long_this_test_score
     }
-
+    
     test_score_data = test_score_data[type == "기말점수",]
-
+    
     cat(paste0("<기말점수> \n",
                "평균 = ", round(mean(test_score_data$score),2), "점\n", 
                "표준편차 = ", round(sd(test_score_data$score),2)))
   })
-
+  
   ## 온라인 Q&A 참여 (Online Q&A)
   # Q&A 게시글 수 (Q&A Post)
   output$Online_QNA_Post_Summary = renderPrint({
@@ -318,14 +316,14 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       online_qna_data = long_this_year_qna
     }
-
+    
     online_qna_data = online_qna_data[week %in% as.numeric(input$Select_Week) & type == "Q&A 게시글 수",]
-
+    
     cat(paste0("<Q&A 게시글 수> \n",
                "평균 = ", round(mean(online_qna_data$count),2), "개\n", 
                "표준편차 = ", round(sd(online_qna_data$count),2)))
   })
-
+  
   # Q&A 댓글 수 (Q&A Reply)
   output$Online_QNA_Reply_Summary = renderPrint({
     if(input$Mode == "지난 학기 수강생"){
@@ -333,14 +331,14 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       online_qna_data = long_this_year_qna
     }
-
+    
     online_qna_data = online_qna_data[week %in% as.numeric(input$Select_Week) & type == "Q&A 댓글 수",]
-
+    
     cat(paste0("<Q&A 댓글 수> \n",
                "평균 = ", round(mean(online_qna_data$count),2), "개\n", 
                "표준편차 = ", round(sd(online_qna_data$count),2)))
   })
-
+  
   ## 온라인 토론 참여 (Online Team)
   # 팀플 게시글 수 (Team Post)
   output$Online_Team_Post_Summary = renderPrint({
@@ -349,34 +347,34 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       online_team_data = long_this_year_team
     }
-
+    
     online_team_data = online_team_data[week %in% as.numeric(input$Select_Week) & type == "팀플 게시글 수",]
-
+    
     cat(paste0("<팀플 게시글 수> \n",
                "평균 = ", round(mean(online_team_data$count),2), "개\n", 
                "표준편차 = ", round(sd(online_team_data$count),2)))
   })
-
+  
   # 팀플 댓글 수 (Team Reply)
-   output$Online_Team_Reply_Summary = renderPrint({
+  output$Online_Team_Reply_Summary = renderPrint({
     if(input$Mode == "지난 학기 수강생"){
       online_team_data = long_last_year_team
     }else if(input$Mode == "현재 학기 수강생"){
       online_team_data = long_this_year_team
     }
-
+    
     online_team_data = online_team_data[week %in% as.numeric(input$Select_Week) & type == "팀플 댓글 수",]
-
+    
     cat(paste0("<팀플 댓글 수> \n",
                "평균 = ", round(mean(online_team_data$count),2), "개\n", 
                "표준편차 = ", round(sd(online_team_data$count),2)))
   })
   
-
+  
   ### Plot Output (ggplotly)
   output$Test_Score_Plot = renderPlotly({
     pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
-
+    
     if(input$Mode == "지난 학기 수강생"){
       test_score_data = long_last_test_score
     }else if(input$Mode == "현재 학기 수강생"){
@@ -385,24 +383,24 @@ shinyServer(function(input, output) {
     
     set.seed(100)
     test_plot = fn_draw_strip_plot(data = test_score_data,
-                           this_data = long_this_test_score,
-                           y = "score",
-                           type_vec = c("중간점수", "기말점수"),
-                           pal = pal,
-                           my_data = my_data, 
-                           jitter = 0.1)
-
-
+                                   this_data = long_this_test_score,
+                                   y = "score",
+                                   type_vec = c("중간점수", "기말점수"),
+                                   pal = pal,
+                                   my_data = my_data, 
+                                   jitter = 0.1)
+    
+    
     test_plot %>%
       config(displayModeBar = F) %>%
-       onRender(javascript)
+      onRender(javascript)
   })
-
-
-
+  
+  
+  
   output$Online_QNA_Plot = renderPlotly({
     pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
-
+    
     if(input$Mode == "지난 학기 수강생"){
       online_qna_data = long_last_year_qna
     }else if(input$Mode == "현재 학기 수강생"){
@@ -410,19 +408,19 @@ shinyServer(function(input, output) {
     }
     set.seed(100)
     qna_plot = fn_draw_strip_plot(data = online_qna_data[week %in% as.numeric(input$Select_Week)],
-                                 this_data = long_this_year_qna[week %in% as.numeric(input$Select_Week)],
-                                 y = "count",
-                                 type_vec = c("Q&A 게시글 수", "Q&A 댓글 수"),
-                                 pal = pal,
-                                 my_data = my_data,
-                                 jitter = 0.1)
-
+                                  this_data = long_this_year_qna[week %in% as.numeric(input$Select_Week)],
+                                  y = "count",
+                                  type_vec = c("Q&A 게시글 수", "Q&A 댓글 수"),
+                                  pal = pal,
+                                  my_data = my_data,
+                                  jitter = 0.1)
+    
     qna_plot %>% 
       config(displayModeBar = F) %>%
-        onRender(javascript)
+      onRender(javascript)
   })
-
-
+  
+  
   output$Online_Team_Plot = renderPlotly({
     pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
     
@@ -431,20 +429,20 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       online_team_data = long_this_year_team
     }
-
+    
     set.seed(100)
     team_plot = fn_draw_strip_plot(data = online_team_data[week %in% as.numeric(input$Select_Week)],
-                                  this_data = long_this_year_team[week %in% as.numeric(input$Select_Week)],
-                                  y = "count",
-                                  type_vec = c("팀플 게시글 수", "팀플 댓글 수"),
-                                  pal = pal,
-                                  my_data = my_data,
-                                  jitter = 0.1)
-
+                                   this_data = long_this_year_team[week %in% as.numeric(input$Select_Week)],
+                                   y = "count",
+                                   type_vec = c("팀플 게시글 수", "팀플 댓글 수"),
+                                   pal = pal,
+                                   my_data = my_data,
+                                   jitter = 0.1)
+    
     team_plot %>% 
       config(displayModeBar = F) %>%
-        onRender(javascript)  
-    })
+      onRender(javascript)  
+  })
   
   
   #######################################################
@@ -452,7 +450,7 @@ shinyServer(function(input, output) {
   #######################################################
   output$Weekly_Mean_QNA_Post_Plot = renderPlotly({
     pal = fn_change_color(choices = "ALL", type = input$Mode)
-
+    
     if(input$Mode == "지난 학기 수강생"){
       weekly_score = long_last_weekly_score
     }else if(input$Mode == "현재 학기 수강생"){
@@ -482,17 +480,17 @@ shinyServer(function(input, output) {
     ggplotly(g)%>% 
       config(displayModeBar = F)
   })
-
+  
   
   output$Weekly_Mean_QNA_Reply_Plot = renderPlotly({
     pal = fn_change_color(choices = "ALL", type = input$Mode)
-
+    
     if(input$Mode == "지난 학기 수강생"){
       weekly_score = long_last_weekly_score
     }else if(input$Mode == "현재 학기 수강생"){
       weekly_score = long_this_weekly_score
     }
-
+    
     if(input$Description_Mode == "성적 그룹별 추이 보기"){
       y_val = "Q&A 댓글 수 평균 그룹별"
     }else if(input$Description_Mode == "전체 학습자 추이 보기"){
@@ -515,16 +513,16 @@ shinyServer(function(input, output) {
     ggplotly(g)%>% 
       config(displayModeBar = F)
   })
-
+  
   output$Weekly_Mean_Team_Post_Plot = renderPlotly({
     pal = fn_change_color(choices = "ALL", type = input$Mode)
-
+    
     if(input$Mode == "지난 학기 수강생"){
       weekly_score = long_last_weekly_score
     }else if(input$Mode == "현재 학기 수강생"){
       weekly_score = long_this_weekly_score
     }
-
+    
     if(input$Description_Mode == "성적 그룹별 추이 보기"){
       y_val = "팀플 게시글 수 평균 그룹별"
     }else if(input$Description_Mode == "전체 학습자 추이 보기"){
@@ -543,15 +541,15 @@ shinyServer(function(input, output) {
                          pal = pal,
                          my_data = my_data,
                          my_data_y = "팀플 게시글 수")
-
+    
     ggplotly(g)%>% 
       config(displayModeBar = F)
   })
-
-
+  
+  
   output$Weekly_Mean_Team_Reply_Plot = renderPlotly({
     pal = fn_change_color(choices = "ALL", type = input$Mode)
-
+    
     if(input$Mode == "지난 학기 수강생"){
       weekly_score = long_last_weekly_score
     }else if(input$Mode == "현재 학기 수강생"){
@@ -587,7 +585,7 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       title_text = "현재 학기 수강생 학습활동 요약보기"  
     }
-      
+    
     titlePanel(
       div(style = "margin-left: 5%;", 
           h3(p(strong(title_text))))
@@ -608,15 +606,15 @@ shinyServer(function(input, output) {
   output$Pop_Up_SelectInput = renderUI({
     if(input$Mode == "지난 학기 수강생"){
       choice_list = c("성적 그룹별 추이 보기", 
-                     "전체 학습자 추이 보기", 
-                     "나와 유사한 학습자 추이 보기",
-                     "최고점 학습자 추이 보기",
-                     "최저점 학습자 추이 보기") 
+                      "전체 학습자 추이 보기", 
+                      "나와 유사한 학습자 추이 보기",
+                      "최고점 학습자 추이 보기",
+                      "최저점 학습자 추이 보기") 
     }else if(input$Mode == "현재 학기 수강생"){
       choice_list = c("전체 학습자 추이 보기", 
-                     "나와 유사한 학습자 추이 보기",
-                     "최고점 학습자 추이 보기",
-                     "최저점 학습자 추이 보기")
+                      "나와 유사한 학습자 추이 보기",
+                      "최고점 학습자 추이 보기",
+                      "최저점 학습자 추이 보기")
     }
     
     fluidRow(
@@ -689,4 +687,3 @@ shinyServer(function(input, output) {
     )    
   })
 })
-

@@ -4,6 +4,7 @@ library(ggplot2)
 library(shiny)
 library(htmlwidgets)
 library(showtext)
+library(shinyBS)
 
 options(shiny.usecairo = FALSE)
 # configure font
@@ -155,9 +156,10 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
       source_text = "Online_Team_Plot"
     }
     
+    pal = c(pal, rgb_red)
     # Plotting (ggplot)
     plot_list[[i]] = ggplot(temp_data, aes_string(x = "type", y = paste0("`", y, "`"), color = "성적등급")) + 
-      scale_colour_manual(values = c(pal, rgb_red)) +
+      scale_colour_manual(values = pal) +
       geom_jitter(position = position_jitter(jitter), cex = 1.3) +
       labs(title = title, x = "구분", y = "점수") +
       theme(plot.title = element_text(hjust = 0.5, face="bold"),
@@ -179,8 +181,8 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
       plot_list[[i]] = plot_list[[i]] + ylim(min(temp_data[, y, with = FALSE]) - 1, max(temp_data[,y, with = FALSE]) + 1)
     }
     
-
-  
+    
+    
     # my_data가 NA가 아닌 경우에 빨간색으로 나의 점수를 표시
     if(is.na(my_data) == FALSE){
       # 해당 type이 데이터에 존재할 때만 표시
@@ -204,5 +206,3 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
   
   return(result_plot)
 }
-
-

@@ -12,6 +12,7 @@ library(ggplot2)
 library(shiny)
 library(htmlwidgets)
 library(showtext)
+library(shinyBS)
 
 options(shiny.usecairo = FALSE)
 # configure font
