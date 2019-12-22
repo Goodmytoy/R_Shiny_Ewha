@@ -7,41 +7,53 @@
 #    http://shiny.rstudio.com/
 #
 
-# 필요한 패키지만 설치
-required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets")
-
-for(pkg in required_packages){
-  if(!pkg %in% required_packages){
-    install.packages(pkg, dependencies = TRUE)
-  }
-}
-
+# base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
 library(readxl)
 library(data.table)
 library(plotly)
 library(ggplot2)
 library(shiny)
 library(htmlwidgets)
+library(showtext)
+
+options(shiny.usecairo = FALSE)
+# configure font
+font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
+showtext_auto()
+showtext_opts(dpi = 112)
+
+
+
+base_path = "."
+
+source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
+
+# 필요한 패키지만 설치
+required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets")
+
+# for(pkg in required_packages){
+#   if(!pkg %in% installed.packages()){
+#     install.packages(pkg, dependencies = TRUE)
+#   }
+# }
+
 
 # 0. Set My Data
 my_data = "x11"
 
-# default setting
-rgb_group_A = rgb(102,176,226, maxColorValue = 255)
-rgb_group_B = rgb(255,189,55, maxColorValue = 255)
-rgb_group_C = rgb(127,108,171, maxColorValue = 255)
-rgb_group_D = rgb(158,200,110, maxColorValue = 255)
-rgb_gray = rgb(192, 192, 192, maxColorValue = 255)
-rgb_green = rgb(41, 76, 43, maxColorValue = 255)
-rgb_red = rgb(255, 0, 0, maxColorValue = 255)
-
 # 1. Load Data
-last_test_score = as.data.table(read_excel("C:/Users/seho1/Documents/R_Shiny_Ewha/data.xlsx", sheet = 2))
-last_weekly_score = as.data.table(read_excel("C:/Users/seho1/Documents/R_Shiny_Ewha/data.xlsx", sheet = 3))
-last_total_score = as.data.table(read_excel("C:/Users/seho1/Documents/R_Shiny_Ewha/data.xlsx", sheet = 4))
-this_test_score = as.data.table(read_excel("C:/Users/seho1/Documents/R_Shiny_Ewha/data.xlsx", sheet = 5))
-this_weekly_score = as.data.table(read_excel("C:/Users/seho1/Documents/R_Shiny_Ewha/data.xlsx", sheet = 6))
+last_test_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 2))
+last_weekly_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 3))
+last_total_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 4))
+this_test_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 5))
+this_weekly_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 6))
 # this_total_score = as.data.table(read_excel("C:/Users/seho1/Documents/R_Shiny_Ewha/data.xlsx", sheet = 7))
+
+last_test_score[order(수강생)]
+last_weekly_score[order(수강생)]
+last_total_score[order(수강생)]
+this_test_score[order(수강생)]
+this_weekly_score[order(수강생)]
 
 # 2. Merge Data
 ## 2.1 Last Year Data
@@ -169,101 +181,6 @@ long_this_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 게시글 �
 long_this_weekly_score[, `팀플 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
 long_this_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
 
-fn_change_color = function(choices, type = "지난 학기 수강생"){
-
-  pal = rep(rgb_gray, 4)
-
-  if(type == "지난 학기 수강생"){
-    if("A" %in% choices){
-      pal[1] = rgb_group_A
-    }
-    if("B" %in% choices){
-      pal[2] = rgb_group_B
-    }
-    if("C" %in% choices){
-      pal[3] = rgb_group_C
-    }
-    if("D" %in% choices){
-      pal[4] = rgb_group_D
-    }
-    if("ALL" %in% choices){
-      pal[1] = rgb_group_A
-      pal[2] = rgb_group_B
-      pal[3] = rgb_group_C
-      pal[4] = rgb_group_D
-    }
-  }
-  
-  return(pal)
-}
-
-fn_draw_bar_plot = function(data, this_data, y, pal, my_data = NA, my_data_y = NA){
-  max_week = max(as.integer(data[,week]))
-  temp_data = unique(data, by = c("성적등급", "week"))
-  
-  g = ggplot(temp_data, aes_string(x = "week", y = paste0("`", y, "`"), group = "수강생", color = "성적등급")) +
-             scale_colour_manual(values = pal) +
-             geom_line() +
-             geom_point() + 
-             scale_x_discrete(position = "top", labels = paste0(rep(1:max_week), " 주차")) +
-             theme(plot.title = element_text(hjust = 0.5, face="bold"),
-                   axis.text = element_text(face="bold"),
-                   axis.title.x = element_blank(),
-                   axis.title.y = element_blank(),
-                   panel.border = element_rect(fill = NA, color = "black"),
-                   panel.grid.major = element_line(color = "gray"),
-                   panel.grid.minor = element_line(color = "gray"),
-                   panel.background = element_blank(),
-                   legend.position = "none")
-  if(is.na(my_data) == FALSE){
-    g = g + geom_line(data = this_data[수강생 == my_data,], aes_string(x = "week", y = paste0("`", my_data_y, "`")), color = "red") 
-  }
-  
-  return(ggplotly(g, tooltip = c("x", "y")))
-}
-
-
-fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA){
-  plot_list = vector("list", length = 2)
-  
-  for(i in 1:length(type_vec)){
-    temp_data = data[type == type_vec[i]]
-    if(nrow(temp_data) == 0){
-      next
-    }
-    plot_list[[i]] = ggplot(temp_data, aes_string(x = "type", y = paste0("`", y, "`"), color = "성적등급")) + 
-                          scale_colour_manual(values = c(pal, rgb_red)) +
-                          geom_jitter(position = position_jitter(0.1), cex = 1.3) +
-                          labs(title = "시험점수", x = "구분", y = "점수") + 
-                          theme(plot.title = element_text(hjust = 0.5, face="bold"),
-                                axis.title.x = element_blank(),
-                                axis.title.y = element_blank(),
-                                axis.text = element_text(face="bold"),
-                                panel.border = element_blank(),
-                                panel.grid.major = element_blank(),
-                                panel.grid.minor = element_blank(),
-                                panel.background = element_blank(),
-                                axis.ticks.x = element_blank(),
-                                legend.position = "none") 
-    if(y == "score"){
-      plot_list[[i]] = plot_list[[i]] + ylim(0, 100)
-    }
-    if(is.na(my_data) == FALSE){
-      if(type_vec[i] %in% this_data[,type]){
-        plot_list[[i]] = plot_list[[i]] + geom_point(data = this_data[type == type_vec[i] & 수강생 == my_data,], position = position_jitter(0.1), cex = 3, shape = 18)   
-      }
-    } 
-  }
-  
-  if(sum(sapply(plot_list, is.null)) == 0){
-    result_plot = subplot(plot_list[[1]], plot_list[[2]], shareY = TRUE)
-  }else{
-    result_plot = ggplotly(plot_list[[1]])
-  }
-  
-  return(result_plot)
-}
-
 
 
 # document.getElementsByClassName('scatterlayer')[4].getElementsByClassName('scatter')[data.points[0].curveNumber].getElementsByClassName('point')[data.points[0].pointNumber];
@@ -273,12 +190,34 @@ javascript = "function(el, x){
                   var point_arr = new Array(plot_len);
                   var old_point_arr = new Array(plot_len);
                   var plotly_div_arr = new Array(plot_len);
-
-
+                  
+                  var old_curve_num = data.points[0].curveNumber;
+                  var curve_num = data.points[0].curveNumber;
+                  var point_num = data.points[0].pointNumber;
+                  
+                  console.log('curve_num: ', String(curve_num));
+                  console.log('point_num: ', String(point_num));
+                  
+                  if(document.getElementsByClassName('scatterlayer').length == 6){
+                    var ref_plot_num = 0;
+                  } else {
+                    var ref_plot_num = 2
+                  }
+                  
+                  console.log('max_curve_: ', String(document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length));
+                  
+                  if(curve_num >= document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length){
+                    curve_num = curve_num - document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length
+                  }
+                  
+                  console.log('curve_num: ', String(curve_num));
+                  
                   for(i=0; i<plot_len; i++) {
-                    point_arr[i] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[data.points[0].curveNumber].getElementsByClassName('point')[data.points[0].pointNumber];
+                    console.log('curve_num: ', String(curve_num));
+                    point_arr[i] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[point_num];
                     plotly_div_arr[i] =  document.getElementsByClassName('plotly')[i];
                   }
+                  
 
                   for(i=0; i<plot_len; i++) {
                     if (plotly_div_arr[i].backup !== undefined) {
@@ -288,9 +227,10 @@ javascript = "function(el, x){
                       }
                     } 
                   }
+                  
                   for(i=0; i<plot_len; i++) {
-                    plotly_div_arr[i].backup = {curveNumber: data.points[0].curveNumber,
-                                            pointNumber: data.points[0].pointNumber,
+                    plotly_div_arr[i].backup = {curveNumber: curve_num,
+                                            pointNumber: point_num,
                                             d: point_arr[i].attributes['d'].value,
                                             style: point_arr[i].attributes['style'].value
                                             };
@@ -302,6 +242,15 @@ javascript = "function(el, x){
                 });
               }"
 
+test_plot = fn_draw_strip_plot(data = long_last_test_score,
+                               this_data = long_this_test_score,
+                               y = "score",
+                               type_vec = c("중간점수", "기말점수"),
+                               pal = pal,
+                               my_data = my_data, jitter = 0.1)
+test_plot %>%
+  config(displayModeBar = F) %>%
+  onRender(javascript)
 
 
 # Define server logic required to draw a histogram
@@ -317,12 +266,13 @@ shinyServer(function(input, output) {
 
     sliderInput(
       inputId = "Select_Week", 
-      label = h4(p(strong("주차 선택"))),
+      # label = h4(p(strong("주차 선택"))),
+      label = NULL,
       min = 1,
       max = max_week,
       value = 1,
       post = "주차",
-      width = "90%"
+      width = "100%"
     )
   })
 
@@ -439,7 +389,8 @@ shinyServer(function(input, output) {
                            y = "score",
                            type_vec = c("중간점수", "기말점수"),
                            pal = pal,
-                           my_data = my_data)
+                           my_data = my_data, 
+                           jitter = 0.1)
 
 
     test_plot %>%
@@ -459,15 +410,16 @@ shinyServer(function(input, output) {
     }
     set.seed(100)
     qna_plot = fn_draw_strip_plot(data = online_qna_data[week %in% as.numeric(input$Select_Week)],
-                           this_data = long_this_year_qna[week %in% as.numeric(input$Select_Week)],
-                           y = "count",
-                           type_vec = c("Q&A 게시글 수", "Q&A 댓글 수"),
-                           pal = pal,
-                           my_data = my_data)
+                                 this_data = long_this_year_qna[week %in% as.numeric(input$Select_Week)],
+                                 y = "count",
+                                 type_vec = c("Q&A 게시글 수", "Q&A 댓글 수"),
+                                 pal = pal,
+                                 my_data = my_data,
+                                 jitter = 0.1)
 
     qna_plot %>% 
       config(displayModeBar = F) %>%
-       onRender(javascript)
+        onRender(javascript)
   })
 
 
@@ -481,19 +433,18 @@ shinyServer(function(input, output) {
     }
 
     set.seed(100)
-    qna_plot = fn_draw_strip_plot(data = online_team_data[week %in% as.numeric(input$Select_Week)],
+    team_plot = fn_draw_strip_plot(data = online_team_data[week %in% as.numeric(input$Select_Week)],
                                   this_data = long_this_year_team[week %in% as.numeric(input$Select_Week)],
                                   y = "count",
                                   type_vec = c("팀플 게시글 수", "팀플 댓글 수"),
                                   pal = pal,
-                                  my_data = my_data)
+                                  my_data = my_data,
+                                  jitter = 0.1)
 
-    qna_plot %>% 
+    team_plot %>% 
       config(displayModeBar = F) %>%
-       onRender(javascript)
+        onRender(javascript)  
     })
-
-
   
   
   #######################################################
@@ -669,12 +620,18 @@ shinyServer(function(input, output) {
     }
     
     fluidRow(
-      column(width = 12, align = "center",
+      column(width = 2, offset = 7, align = "center",
+             div(style = "display:inline-block; padding-top: 18px; margin-left: -20%;", 
+                 h4(p(strong("Mode : ")))
+             )       
+      ),
+      column(width = 3, align = "center",
+             br(),
              div(
-               style = "width: 250px; margin-left: 60%;",
+               style = "width: 250px; margin-left: -40%;",
                selectInput( 
                  inputId = "Description_Mode", 
-                 label = div(style = "margin-left: 60%;", h4(p(strong("Mode")))),
+                 label = NULL,
                  choice = choice_list
                )
              )
@@ -732,3 +689,4 @@ shinyServer(function(input, output) {
     )    
   })
 })
+

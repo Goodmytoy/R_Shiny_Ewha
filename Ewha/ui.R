@@ -6,16 +6,19 @@
 # 
 #    http://shiny.rstudio.com/
 
-library(shiny)
-library(shinyBS)
-library(showtext)
+library(data.table)
 library(plotly)
+library(ggplot2)
+library(shiny)
+library(htmlwidgets)
+library(showtext)
 
-
+options(shiny.usecairo = FALSE)
 # configure font
 font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
 showtext_auto()
 showtext_opts(dpi = 112)
+
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -45,12 +48,19 @@ shinyUI(fluidPage(
   fluidRow(
     # column(width = 8,
     #   fluidRow(
-        column(width = 3, offset = 1, align = "center",
+        column(width = 1, offset = 1, align = "center",
+          div(style = "display:inline-block; padding-top: 18px; margin-left: 20%;", 
+              h4(p(strong("Mode")))
+          )       
+        ),
+        column(width = 2, offset = 0, align = "center",
+          br(),
           div(
-            style = "height: 30px; width: 250px; margin-left: 10%;",
+            style = "height: 30px; width: 170px; margin-left: -50px;",
             selectInput(
               inputId = "Mode",
-              label = h4(p(strong("Mode"))),
+              # label = h4(p(strong("Mode"))),
+              label = NULL,
               choice = c("지난 학기 수강생", "현재 학기 수강생"),
               selected = "지난 학기 수강생"
             ),
@@ -59,21 +69,28 @@ shinyUI(fluidPage(
 
           # tags$head(tags$style(HTML(".selectize-input {height: 30px; width: 250px; margin-left: 25%;}")))
         ),
-        column(width = 6, offset = 0, 
-          align = "center",
-          checkboxGroupInput(
-            inputId = "Grade_Compare_Group", 
-            label = h4(p(strong("성적 비교 집단"))), 
-            # choices = c("A", "B", "C", "D이하"),
-            choiceNames = list(
-              tags$span("A", style = "color: rgb(102,176,226); font-weight: bold; font-size: large; margin-right : 10px;"),
-              tags$span("B", style = "color: rgb(255,189,55); font-weight: bold; font-size: large; margin-right : 10px;"),
-              tags$span("C", style = "color: rgb(127,108,171); font-weight: bold; font-size: large; margin-right : 10px;"),
-              tags$span("D", style = "color: rgb(158,200,110); font-weight: bold; font-size: large; margin-right : 10px;")
-            ),
-            choiceValues = c("A", "B", "C", "D"),
-            # colors = c("orange", "blue", "purple", "green"),
-            inline = TRUE
+        column(width = 2, offset = 1, align = "center",
+          div(style = "display:inline-block; padding-top: 12px; margin-left: -30px;", 
+            h4(p(strong("성적 비교 집단")))
+          )     
+        ),
+        column(width = 3, offset = 1, align = "center",
+          br(),
+          div(style = "display:inline-block; margin-left: -120%;",
+            checkboxGroupInput(
+              inputId = "Grade_Compare_Group", 
+              # label = h4(p(strong("성적 비교 집단"))), 
+              label = NULL,
+              choiceNames = list(
+                tags$span("A", style = "color: rgb(102,176,226); font-weight: bold; font-size: large; margin-right : 50%;"),
+                tags$span("B", style = "color: rgb(255,189,55); font-weight: bold; font-size: large; margin-right : 50%;"),
+                tags$span("C", style = "color: rgb(127,108,171); font-weight: bold; font-size: large; margin-right : 50%;"),
+                tags$span("D이하", style = "color: rgb(158,200,110); font-weight: bold; font-size: large; margin-right : 20px;")
+              ),
+              choiceValues = c("A", "B", "C", "D"),
+              # colors = c("orange", "blue", "purple", "green"),
+              inline = TRUE
+            )   
           )
         )  
       # )
@@ -113,23 +130,29 @@ shinyUI(fluidPage(
               )
             )          
           )
+        ),
+        fluidRow(
+          column(width = 2, align = "center",
+            div(style = "display:inline-block; padding-top: 30px; margin-left : -10px",
+                h4(p(strong("주차 선택")))
+            )
+          ),
+          column(width = 8, align = "center",
+            br(),
+            uiOutput("max_week_slider_input")
+          ),
+          column(width = 1, offset = 1, align = "center",
+                 #padding-top: 120%; margin-left : -300%
+            div(style="display:inline-block; height: 50%; width:32%; padding-top: 30px; margin-left : -150px",
+               actionButton(
+                 inputId = "Pop-Up",
+                 label = "요약 보기"
+               )
+            )
+          )
         )
       )
     )
-  ),
-
-  fluidRow(height = 50,
-    column(width = 4, offset= 4, align = "center", 
-      uiOutput("max_week_slider_input")
-    ),
-    column(width = 1, align = "center",
-      div(style="display:inline-block; width:32%; padding:40px",
-        actionButton(
-          inputId = "Pop-Up",
-          label = "요약 보기"
-        )
-      )
-    )   
   ),
   mainPanel(
     bsModal(

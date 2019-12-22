@@ -1,0 +1,13 @@
+name: Ewha
+title: Ewha
+username:
+account: sehopark
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1615500
+bundleId: 2685944
+url: https://sehopark.shinyapps.io/Ewha/
+when: 1576985234.08978
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: debug.log
