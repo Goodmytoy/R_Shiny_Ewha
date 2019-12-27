@@ -9,8 +9,9 @@ library(shinyBS)
 options(shiny.usecairo = FALSE)
 # configure font
 font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
+# font_add_google("Nanum Gothic", "nanumgothic")
 showtext_auto()
-showtext_opts(dpi = 112)
+# showtext_opts(dpi = 112)
 # default setting
 rgb_group_A = rgb(102,176,226, maxColorValue = 255)
 rgb_group_B = rgb(255,189,55, maxColorValue = 255)
@@ -65,7 +66,14 @@ fn_change_color = function(choices, type = "지난 학기 수강생"){
 }
 
 
-fn_draw_bar_plot = function(data, this_data, y, pal, my_data = NA, my_data_y = NA){
+fn_draw_bar_plot = function(data, 
+                            this_data, 
+                            y, 
+                            pal, 
+                            legend = TRUE, 
+                            my_data = NA, 
+                            my_data_y = NA, 
+                            browser = FALSE){
   # Description:
   #   line plot를 그리는 함수
   #
@@ -82,18 +90,30 @@ fn_draw_bar_plot = function(data, this_data, y, pal, my_data = NA, my_data_y = N
   # Returns:
   #   Plotly 형태의 그래프 object 반환
   
+
+
+  if(browser == TRUE){
+    browser()
+  }
   # 해당 데이터가 가지고 있는 max week을 구한다.
   max_week = max(as.integer(data[,week]))
   # 성적등급별, 주차별 Unique한 데이터만 사용한다.
   # (여러 학생이 있는 경우 그 중 첫번쨰 학생만 적용)
   temp_data = unique(data, by = c("성적등급", "week"))
+  if(grepl("그룹별", y) == FALSE){
+    temp_data[,성적등급 := strsplit(y, " ")[[1]][length(strsplit(y, " ")[[1]])]]
+    temp_data = unique(temp_data, by = c(y, "성적등급", "week"))
+    # temp_data[, 성적등급 := afactor(temp_data$성적등급, levels = c(y, "나의 점수"))]
+    pal = c("red", pal[1])
+  }
+  pal = c(pal, "red")
   
   # Plotting (ggplot)
   g = ggplot(temp_data, aes_string(x = "week", y = paste0("`", y, "`"), group = "수강생", color = "성적등급")) +
     scale_colour_manual(values = pal) +
     geom_line() +
     geom_point() + 
-    scale_x_discrete(position = "top", labels = paste0(rep(1:max_week), " 주차")) +
+    scale_x_discrete(labels = paste0(rep(1:max_week), "주차")) +
     theme(plot.title = element_text(hjust = 0.5, face="bold"),
           axis.text = element_text(face="bold"),
           axis.title.x = element_blank(),
@@ -101,20 +121,27 @@ fn_draw_bar_plot = function(data, this_data, y, pal, my_data = NA, my_data_y = N
           panel.border = element_rect(fill = NA, color = "black"),
           panel.grid.major = element_line(color = "gray"),
           panel.grid.minor = element_line(color = "gray"),
-          panel.background = element_blank(),
-          legend.position = "none")
+          panel.background = element_blank())
   
+
   # my_data가 NA가 아닌 경우에 빨간색으로 나의 점수를 표시한다.
+  this_data[,성적등급:= "나의 점수"]
   if(is.na(my_data) == FALSE){
-    g = g + geom_line(data = this_data[수강생 == my_data,], aes_string(x = "week", y = paste0("`", my_data_y, "`")), color = "red") 
+    g = g + geom_line(data = this_data[수강생 == my_data,], aes_string(y = paste0("`", my_data_y, "`"), color = "성적등급")) +
+      geom_point(data = this_data[수강생 == my_data,], aes_string(y = paste0("`", my_data_y, "`"), color = "성적등급"))
   }
   
-  return(ggplotly(g, tooltip = c("x", "y")))
+  if(legend == FALSE){
+    g = g + theme(legend.position = "none")
+  }
+    
+  
+  return(ggplotly(g, tooltip = c("week", y)))
 }
 
 
 
-fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, jitter = 0.1){
+fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, jitter = 0.1, browser = FALSE){
   
   # Description:
   #   strip plot를 그리는 함수
@@ -133,6 +160,9 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
   # Returns:
   #   Plotly 형태의 그래프 object 반환
   
+  if(browser == TRUE){
+    browser()
+  }
   # 2개의 빈 리스트를 생성(type 길이에 맞추지만 여기서는 길이가 2로 제한되어 있으므로)
   plot_list = vector("list", length = 2)
   
