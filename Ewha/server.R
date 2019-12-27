@@ -7,7 +7,15 @@
 #    http://shiny.rstudio.com/
 #
 
-base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
+# 필요한 패키지만 설치
+required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets")
+
+for(pkg in required_packages){
+  if(!pkg %in% installed.packages()){
+    install.packages(pkg, dependencies = TRUE)
+  }
+}
+
 library(readxl)
 library(data.table)
 library(plotly)
@@ -17,6 +25,15 @@ library(htmlwidgets)
 library(showtext)
 library(shinyBS)
 
+
+
+
+
+base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
+# base_path = "."
+source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
+
+
 options(shiny.usecairo = FALSE)
 # configure font
 font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
@@ -25,22 +42,9 @@ showtext_opts(dpi = 112)
 
 
 
-# base_path = "."
-
-source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
-
-# 필요한 패키지만 설치
-required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets")
-
-# for(pkg in required_packages){
-#   if(!pkg %in% installed.packages()){
-#     install.packages(pkg, dependencies = TRUE)
-#   }
-# }
-
-
-# 0. Set My Data
-my_data = "x11"
+# 0. Set My Data(x11, x34, x43)
+my_data = "x34"
+jitter_value = 0
 
 # 1. Load Data
 last_test_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 2))
@@ -392,7 +396,7 @@ shinyServer(function(input, output) {
                                    type_vec = c("중간점수", "기말점수"),
                                    pal = pal,
                                    my_data = my_data, 
-                                   jitter = 0.1)
+                                   jitter = jitter_value)
     
     
     test_plot %>%
@@ -417,7 +421,7 @@ shinyServer(function(input, output) {
                                   type_vec = c("Q&A 게시글 수", "Q&A 댓글 수"),
                                   pal = pal,
                                   my_data = my_data,
-                                  jitter = 0.1)
+                                  jitter = jitter_value)
     
     qna_plot %>% 
       config(displayModeBar = F) %>%
@@ -441,7 +445,7 @@ shinyServer(function(input, output) {
                                    type_vec = c("팀플 게시글 수", "팀플 댓글 수"),
                                    pal = pal,
                                    my_data = my_data,
-                                   jitter = 0.1)
+                                   jitter = jitter_value)
     
     team_plot %>% 
       config(displayModeBar = F) %>%

@@ -53,7 +53,7 @@ shinyUI(fixedPage(
     # column(width = 8,
     #   fluidRow(
         column(width = 1, offset = 1, align = "left",
-          div(style = "display:inline-block; padding-top: 18px; margin-left: 0%;", 
+          div(style = "display:inline-block; padding-top: 18px; margin-left: 0px;", 
               h4(p(strong("Mode")))
           )       
         ),

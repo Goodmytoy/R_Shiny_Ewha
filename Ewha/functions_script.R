@@ -92,9 +92,9 @@ fn_draw_bar_plot = function(data,
   
 
 
-  if(browser == TRUE){
-    browser()
-  }
+  # if(browser == TRUE){
+  #   browser()
+  # }
   # 해당 데이터가 가지고 있는 max week을 구한다.
   max_week = max(as.integer(data[,week]))
   # 성적등급별, 주차별 Unique한 데이터만 사용한다.
@@ -160,9 +160,9 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
   # Returns:
   #   Plotly 형태의 그래프 object 반환
   
-  if(browser == TRUE){
-    browser()
-  }
+  # if(browser == TRUE){
+  #   browser()
+  # }
   # 2개의 빈 리스트를 생성(type 길이에 맞추지만 여기서는 길이가 2로 제한되어 있으므로)
   plot_list = vector("list", length = 2)
   
