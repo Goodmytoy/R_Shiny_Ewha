@@ -66,7 +66,7 @@ fn_change_color = function(choices, type = "지난 학기 수강생"){
 }
 
 
-fn_draw_bar_plot = function(data, 
+fn_draw_line_plot = function(data, 
                             this_data, 
                             y, 
                             pal, 

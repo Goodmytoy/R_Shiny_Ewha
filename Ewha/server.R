@@ -487,7 +487,7 @@ shinyServer(function(input, output) {
       legend_yn = FALSE
     }
     
-    g = fn_draw_bar_plot(data = weekly_score, 
+    g = fn_draw_line_plot(data = weekly_score, 
                          this_data = long_this_weekly_score, 
                          y = y_val, 
                          pal = pal,
@@ -530,7 +530,7 @@ shinyServer(function(input, output) {
       pal = rep(rgb_green, 4)
     }
     
-    g = fn_draw_bar_plot(data = weekly_score, 
+    g = fn_draw_line_plot(data = weekly_score, 
                          this_data = long_this_weekly_score, 
                          y = y_val, 
                          pal = pal,
@@ -568,7 +568,7 @@ shinyServer(function(input, output) {
       pal = rep(rgb_green, 4)
     }
     
-    g = fn_draw_bar_plot(data = weekly_score, 
+    g = fn_draw_line_plot(data = weekly_score, 
                          this_data = long_this_weekly_score, 
                          y = y_val, 
                          pal = pal,
@@ -607,7 +607,7 @@ shinyServer(function(input, output) {
       pal = rep(rgb_green, 4)
     }
     
-    g = fn_draw_bar_plot(data = weekly_score, 
+    g = fn_draw_line_plot(data = weekly_score, 
                          this_data = long_this_weekly_score, 
                          y = y_val, 
                          pal = pal,
@@ -732,62 +732,3 @@ shinyServer(function(input, output) {
     )    
   })
 })
-
-# y_val = "Q&A 댓글 수 평균 그룹별"
-# g1 = fn_draw_bar_plot(data = weekly_score, 
-#                      this_data = long_this_weekly_score, 
-#                      y = y_val, 
-#                      pal = pal,
-#                      legend = TRUE,
-#                      my_data = my_data,
-#                      my_data_y = "Q&A 게시글 수")
-# 
-# y_val = "Q&A 댓글 수 평균 그룹별"
-# g2 = fn_draw_bar_plot(data = weekly_score, 
-#                      this_data = long_this_weekly_score, 
-#                      y = y_val, 
-#                      pal = pal,
-#                      legend = FALSE,
-#                      my_data = my_data,
-#                      my_data_y = "Q&A 댓글 수")
-# 
-# y_val = "팀플 게시글 수 평균 그룹별"
-# g3 = fn_draw_bar_plot(data = weekly_score, 
-#                      this_data = long_this_weekly_score, 
-#                      y = y_val, 
-#                      pal = pal,
-#                      legend = FALSE,
-#                      my_data = my_data,
-#                      my_data_y = "팀플 게시글 수")
-# 
-# y_val = "팀플 댓글 수 평균 그룹별"
-# g4 = fn_draw_bar_plot(data = weekly_score, 
-#                      this_data = long_this_weekly_score, 
-#                      y = y_val, 
-#                      pal = pal,
-#                      legend = FALSE,
-#                      my_data = my_data,
-#                      my_data_y = "팀플 댓글 수")
-# 
-# subplot(g1, g2, g3, g4, nrows= 4, shareX = T) %>% layout(legend = list(orientation = "h", y = 1.1))
-# 
-# 
-# g1 = g1 %>% layout(legend = list(orientation = "h", y = 1.2))
-# g2 = g2 %>% layout(showlegend = F)
-# g3 = g3 %>% layout(showlegend = F)
-# sg = subplot(g1, g2, g3, g4, nrows= 4, shareX = T)
-# for(i in 5:(length(sg$x$data)-1)){
-#   # if(sg$x$data[[i]]$marker$color == "rgba(255,0,0,1)"){
-#   #   next
-#   # }
-#   sg$x$data[[i]]$showlegend = FALSE
-# }
-# sg %>% layout(legend = list(orientation = "h", y = 1.1))
-# 
-# sg$x$data[[1]]$showlegend = FALSE
-# sg$x$data[[2]]$showlegend = FALSE
-# sg$x$data[[3]]$showlegend = FALSE
-# sg$x$data[[4]]$showlegend = FALSE
-# sg$x$data
-
-long_last_weekly_score[,c(colnames(long_last_weekly_score)[grep("유사", colnames(long_last_weekly_score))]), with = FALSE]
