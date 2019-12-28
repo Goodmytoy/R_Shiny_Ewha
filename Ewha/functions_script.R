@@ -1,5 +1,4 @@
-# options(encoding = "UTF-8")
-
+# 0. Packages ----------------------------------------------
 library(data.table)
 library(plotly)
 library(ggplot2)
@@ -9,13 +8,12 @@ library(showtext)
 library(shinyBS)
 
 
-options(shiny.usecairo = FALSE)
-# configure font
+# 1. 경로 설정 ----------------------------------------------
 font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
-# font_add_google("Nanum Gothic", "nanumgothic")
 showtext_auto()
-# showtext_opts(dpi = 112)
-# default setting
+showtext_opts(dpi = 112)
+
+# 2. RGB 설정 ----------------------------------------------
 rgb_group_A = rgb(102,176,226, maxColorValue = 255)
 rgb_group_B = rgb(255,189,55, maxColorValue = 255)
 rgb_group_C = rgb(127,108,171, maxColorValue = 255)
@@ -25,6 +23,7 @@ rgb_green = rgb(41, 76, 43, maxColorValue = 255)
 rgb_red = rgb(255, 0, 0, maxColorValue = 255)
 
 
+# 3. Functions ----------------------------------------------
 fn_change_color = function(choices, type = "지난 학기 수강생"){
   # Description:
   #   Plotting을 위한 Pallete vector를 만드는 함수
@@ -241,14 +240,14 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
 }
 
 
-# Javascript Functions
-
-
+# 4. Javascript Functions ----------------------------------------------
+# legend 클릭 비활성화
 legend_disable_js = "function(el, x){
                 el.on('plotly_legendclick', function() { return false; })
              }"
 
-# 
+# Click EVent
+# 클릭했을 때, 연계된 데이터 포인트들의 크기를 확대하기 위해서
 click_event_js = "
 function(el, x){
     el.on('plotly_click', function(data) {

@@ -7,6 +7,7 @@
 #    http://shiny.rstudio.com/
 # options(encoding = "UTF-8")
 
+# 0. Packages ----------------------------------------------
 library(data.table)
 library(plotly)
 library(ggplot2)
@@ -15,17 +16,19 @@ library(htmlwidgets)
 library(showtext)
 library(shinyBS)
 
-options(shiny.usecairo = FALSE)
-# configure font
+
+# 1. 경로 설정 ----------------------------------------------
 font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
 showtext_auto()
 showtext_opts(dpi = 112)
 
 
-# Define UI for application that draws a histogram
+# 2. Shiny UI ----------------------------------------------
 shinyUI(fixedPage(
   # Application title
   titlePanel(h1(p(strong("Find me Find you")), align = "center")),
+  
+  # Description
   fluidRow(column(width = 10, offset = 1,
            br(),
            h5("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다."),
@@ -33,6 +36,7 @@ shinyUI(fixedPage(
   )),
   
   
+  # SelectInput (학기 선택)
   fixedRow(
         column(width = 1, offset = 1, align = "left",
           div(style = "display:inline-block; padding-top: 18px; margin-left: 0px;", 
@@ -52,32 +56,35 @@ shinyUI(fixedPage(
           )
         )
   ),
+  
+  # checkboxGroupInput (성적 비교 집단 선택)
   fixedRow(
-        column(width = 2, offset = 1, align = "left",
-          div(style = "display:inline-block; padding-top: 12px; margin-left: 0px;", 
-            h4(p(strong("성적 비교 집단")))
-          )     
-        ),
-        column(width = 5, offset = 0, align = "left",
-          br(),
-          div(style = "display:inline-block; margin-left: 0px;", # -120%
-            checkboxGroupInput(
-              inputId = "Grade_Compare_Group", 
-              label = NULL,
-              choiceNames = list(
-                tags$span("A", style = "color: rgb(102,176,226); font-weight: bold; font-size: large; margin-right : 50%;"),
-                tags$span("B", style = "color: rgb(255,189,55); font-weight: bold; font-size: large; margin-right : 50%;"),
-                tags$span("C", style = "color: rgb(127,108,171); font-weight: bold; font-size: large; margin-right : 50%;"),
-                tags$span("D이하", style = "color: rgb(158,200,110); font-weight: bold; font-size: large; margin-right : 20px;")
-              ),
-              choiceValues = c("A", "B", "C", "D"),
-              inline = TRUE
-            )   
-          )
-        )  
-      # )
-    # )
+    column(width = 2, offset = 1, align = "left",
+      div(style = "display:inline-block; padding-top: 12px; margin-left: 0px;", 
+        h4(p(strong("성적 비교 집단")))
+      )     
+    ),
+    column(width = 5, offset = 0, align = "left",
+      br(),
+      div(style = "display:inline-block; margin-left: 0px;",
+        checkboxGroupInput(
+          inputId = "Grade_Compare_Group", 
+          label = NULL,
+          choiceNames = list(
+            tags$span("A", style = "color: rgb(102,176,226); font-weight: bold; font-size: large; margin-right : 50%;"),
+            tags$span("B", style = "color: rgb(255,189,55); font-weight: bold; font-size: large; margin-right : 50%;"),
+            tags$span("C", style = "color: rgb(127,108,171); font-weight: bold; font-size: large; margin-right : 50%;"),
+            tags$span("D이하", style = "color: rgb(158,200,110); font-weight: bold; font-size: large; margin-right : 20px;")
+          ),
+          choiceValues = c("A", "B", "C", "D"),
+          inline = TRUE
+        )   
+      )
+    )  
   ),
+  
+  # 시험 점수 Well Panel
+  # Plot & 평균/표준편차
   fluidRow(height = 300,
     column(width = 3, offset = 1,
       tags$style(type = "text/css", "#Mid_Test_Score_Summary { font-size: 10.7px; }
@@ -91,15 +98,19 @@ shinyUI(fixedPage(
           )
         )
       )
-    )
-    ,
+    ),
+    
+    # 온라인 주차별 성적 Well Panel
     column(width = 7, offset = 0, 
       tags$style(type = "text/css", "#Online_QNA_Post_Summary { font-size: 10.7px; }
                                      #Online_QNA_Reply_Summary { font-size: 10.7px; }
                                      #Online_Team_Post_Summary { font-size: 10.7px; }
                                      #Online_Team_Reply_Summary { font-size: 10.7px; }"),
+      
+
       wellPanel(
         fluidRow(
+          # Plot & 평균/표준편차
           column(width = 5, offset = 1,
             verticalLayout(
               plotlyOutput(outputId = "Online_QNA_Plot"),
@@ -109,6 +120,7 @@ shinyUI(fixedPage(
               )
             ),
           ),
+          # Plot & 평균/표준편차
           column(width = 5,
             verticalLayout(
               plotlyOutput(outputId = "Online_Team_Plot"),
@@ -119,6 +131,8 @@ shinyUI(fixedPage(
             )          
           )
         ),
+        
+        # SliderInput
         fluidRow(
           column(width = 2, align = "center",
             div(style = "display:inline-block; padding-top: 30px; margin-left : -10px",
@@ -136,8 +150,9 @@ shinyUI(fixedPage(
             uiOutput("max_week_slider_input")
 
           ),
+          
+          # actionButton
           column(width = 1, offset = 1, align = "center",
-                 #padding-top: 120%; margin-left : -300%
             div(style="display:inline-block; height: 50%; width:32%; padding-top: 30px; margin-left : -150px",
                actionButton(
                  inputId = "Pop-Up",
@@ -149,6 +164,7 @@ shinyUI(fixedPage(
       )
     )
   ),
+  # bsModal - Pop-Up
   mainPanel(
     bsModal(
       id = "Description", 

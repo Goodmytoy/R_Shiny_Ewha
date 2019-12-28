@@ -8,15 +8,18 @@
 #
 
 # options(encoding = "UTF-8")
-# 필요한 패키지만 설치
+
+# 0. Packages ----------------------------------------------
 required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets")
 
+# 설치되어 있지 않으면 해당 패키지를 설치한다.
 for(pkg in required_packages){
   if(!pkg %in% installed.packages()){
     install.packages(pkg, dependencies = TRUE)
   }
 }
 
+# 설치가 완료된 이후에 library  실행
 library(readxl)
 library(data.table)
 library(plotly)
@@ -29,74 +32,54 @@ library(shinyBS)
 
 
 
-
-# base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
-base_path = "."
+# 1. 경로 설정 ----------------------------------------------
+# 데이터 및 functions_script 경로 지정
+base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
+# base_path = "."
 source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
 
 
-options(shiny.usecairo = FALSE)
-# configure font
+
+
+# 2. 폰트 지정 ----------------------------------------------
 font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
 showtext_auto()
 showtext_opts(dpi = 112)
 
 
 
-# 0. Set My Data(x11, x34, x43)
+
+# 3. 데이터 Loading ----------------------------------------------
+# Set My Data(x11, x34, x43)
 my_data = "x43"
 jitter_value = 0
 
-# 1. Load Data
+# Load Data
 last_test_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 2))
 last_weekly_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 3))
 last_total_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 4))
 this_test_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 5))
 this_weekly_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 6))
-# this_total_score = as.data.table(read_excel("C:/Users/seho1/Documents/R_Shiny_Ewha/data.xlsx", sheet = 7))
 
+# 데이터의 순서를 맞춰준다.
+# 추후, Plotly click event 발생 시 point_number가 동일하게 지정될 수 있도록
 last_test_score[order(수강생)]
 last_weekly_score[order(수강생)]
 last_total_score[order(수강생)]
 this_test_score[order(수강생)]
 this_weekly_score[order(수강생)]
 
-# 2. Merge Data
-## 2.1 Last Year Data
-last_test_score = last_test_score[last_total_score[,c("수강생", "실험집단", "성적등급"), with = FALSE], 
-                                  on = c("수강생", "실험집단")]
-last_year_score = last_test_score[last_weekly_score, on = c("수강생", "실험집단")][last_total_score,on = c("수강생", "실험집단")]
 
-## 2.2 This Year Data
+
+
+# 4. 데이터 전처리 ----------------------------------------------
+## 4.1 This Year Data ----------------------------------------------
+## 4.1.1. Data Join ----------------------------------------------
+# 성적등급 데이터를 Join하여 등급별 데이터를 추출할 수 있도록 한다.
 this_year_score = this_test_score[this_weekly_score, on = c("수강생", "실험집단")]
 
-# 3. Melt Data
-# 3.1 Last Year Data
-long_last_test_score = melt(last_test_score, 
-                            id.vars = c("수강생", "실험집단", "성적등급"), 
-                            measure.vars = c("중간점수", "기말점수"), 
-                            variable.name = "type", 
-                            value.name = "score")
-
-long_last_weekly_score = melt(last_year_score,
-                              id.vars = c("수강생", "실험집단", "성적등급"),
-                              measure.vars = patterns("^y[0-9]{1,2}1$", "^y[0-9]{1,2}2$", "^y[0-9]{1,2}3$", "^y[0-9]{1,2}4$"),
-                              variable.name = "week",
-                              value.name = c("Q&A 게시글 수", "Q&A 댓글 수", "팀플 게시글 수", "팀플 댓글 수"))
-
-long_last_year_qna = melt(long_last_weekly_score,
-                          id.vars = c("수강생", "실험집단", "성적등급", "week"),
-                          measure.vars = c("Q&A 게시글 수", "Q&A 댓글 수"),
-                          variable.name = "type",
-                          value.name = "count")
-
-long_last_year_team = melt(long_last_weekly_score,
-                           id.vars = c("수강생", "실험집단", "성적등급", "week"),
-                           measure.vars = c("팀플 게시글 수", "팀플 댓글 수"),
-                           variable.name = "type",
-                           value.name = "count")
-
-# 3.2 This Year Data
+# 4.1.2. Melt Data ----------------------------------------------
+#  --> Longitudinal Data로 변환
 long_this_test_score = melt(this_test_score, 
                             id.vars = c("수강생", "실험집단"), 
                             measure.vars = c("중간점수"), 
@@ -126,8 +109,71 @@ long_this_year_team = melt(long_this_weekly_score,
                            value.name = "count")
 long_this_year_team[,"성적등급" := "NA"]
 
-# 4. Group by Weekly Data
-# 4.1 지난 학기 데이터
+# 4.1.3. Group by Weekly Data ----------------------------------------------
+#전체 학습자
+long_this_weekly_score[, `Q&A 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
+
+# 나와 유사한 학습자
+my_score = this_test_score[수강생 == my_data, 중간점수]
+similar_student = this_test_score[중간점수 >= (my_score - (100 * 0.05)) & 중간점수 <= (my_score + (100 * 0.05)), 수강생]
+long_this_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
+# 최고점 학습자
+long_this_weekly_score[, `Q&A 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `Q&A 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
+
+# 최저점 학습자
+long_this_weekly_score[, `Q&A 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
+
+
+
+## 4.2 Last Year Data ----------------------------------------------
+## 4.2.1. Data Join ----------------------------------------------
+# 성적등급 데이터를 Join하여 등급별 데이터를 추출할 수 있도록 한다.
+last_test_score = last_test_score[last_total_score[,c("수강생", "실험집단", "성적등급"), with = FALSE], 
+                                  on = c("수강생", "실험집단")]
+
+# 주차별 성적데이터와 시험 점수 데이터를 합쳐서 전체 데이터 생성
+last_year_score = last_test_score[last_weekly_score, on = c("수강생", "실험집단")][last_total_score, on = c("수강생", "실험집단")]
+
+# 4.2.2. Melt Data ----------------------------------------------
+#  --> Longitudinal Data로 변환
+# 시험점수 데이터 Melt
+long_last_test_score = melt(last_test_score, 
+                            id.vars = c("수강생", "실험집단", "성적등급"), 
+                            measure.vars = c("중간점수", "기말점수"), 
+                            variable.name = "type", 
+                            value.name = "score")
+# 주차별 전체 성적 데이터 Melt
+long_last_weekly_score = melt(last_year_score,
+                              id.vars = c("수강생", "실험집단", "성적등급"),
+                              measure.vars = patterns("^y[0-9]{1,2}1$", "^y[0-9]{1,2}2$", "^y[0-9]{1,2}3$", "^y[0-9]{1,2}4$"),
+                              variable.name = "week",
+                              value.name = c("Q&A 게시글 수", "Q&A 댓글 수", "팀플 게시글 수", "팀플 댓글 수"))
+# 주차별 Q&A 성적 데이터 Melt
+long_last_year_qna = melt(long_last_weekly_score,
+                          id.vars = c("수강생", "실험집단", "성적등급", "week"),
+                          measure.vars = c("Q&A 게시글 수", "Q&A 댓글 수"),
+                          variable.name = "type",
+                          value.name = "count")
+# 주차별 팀플 성적 데이터 Melt
+long_last_year_team = melt(long_last_weekly_score,
+                           id.vars = c("수강생", "실험집단", "성적등급", "week"),
+                           measure.vars = c("팀플 게시글 수", "팀플 댓글 수"),
+                           variable.name = "type",
+                           value.name = "count")
+
+# 4.2.3. Group by Weekly Data ----------------------------------------------
 # 성적 그룹별
 long_last_weekly_score[, `Q&A 게시글 수 평균 그룹별` := mean(`Q&A 게시글 수`), by = list(성적등급, week)]
 long_last_weekly_score[, `Q&A 댓글 수 평균 그룹별` := mean(`Q&A 게시글 수`), by = list(성적등급, week)]
@@ -160,62 +206,14 @@ long_last_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 게시글 �
 long_last_weekly_score[, `팀플 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
 long_last_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
 
-# 4.2 현재 학기 데이터
-
-#전체 학습자
-long_this_weekly_score[, `Q&A 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-
-# 나와 유사한 학습자
-my_score = this_test_score[수강생 == my_data, 중간점수]
-similar_student = this_test_score[중간점수 >= (my_score - (100 * 0.05)) & 중간점수 <= (my_score + (100 * 0.05)), 수강생]
-long_this_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-# 최고점 학습자
-long_this_weekly_score[, `Q&A 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `Q&A 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-
-# 최저점 학습자
-long_this_weekly_score[, `Q&A 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
 
 
 
-# Define server logic required to draw a histogram
+# 5. Shiny Server ----------------------------------------------
 shinyServer(function(input, output) {
-  
-  #Dynamic Slider Input (max_week)
-  output$max_week_slider_input = renderUI({
-    if(input$Mode == "지난 학기 수강생"){
-      max_week = max(as.numeric(long_last_year_qna$week))
-    }else if(input$Mode == "현재 학기 수강생"){
-      max_week = max(as.numeric(long_this_year_qna$week))
-    }
-    
-    sliderInput(
-      inputId = "Select_Week", 
-      # label = h4(p(strong("주차 선택"))),
-      label = NULL,
-      step = 1,
-      min = 1,
-      max = max_week,
-      value = 1,
-      post = "주차",
-      width = "100%"
-    )
-  })
-  
-  
-  ### Text Output (Mean, Standard Deviance)
-  
+  # 5.1 Main Page ----------------------------------------------
+  # 5.1.1. Text Output ----------------------------------------------
+  # -->  (Mean, Standard Deviance)
   ## 시험점수 (Test Score)
   # 중간점수 (Mid Test Score)
   output$Mid_Test_Score_Summary = renderPrint({
@@ -310,7 +308,7 @@ shinyServer(function(input, output) {
   })
   
   
-  ### Plot Output (ggplotly)
+  # 5.1.2. Strip Plot ----------------------------------------------
   output$Test_Score_Plot = renderPlotly({
     pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
     
@@ -330,7 +328,7 @@ shinyServer(function(input, output) {
                                    jitter = jitter_value)
     
     
-    test_plot %>%
+    test_plot %>% 
       config(displayModeBar = F) %>%
       onRender(click_event_js)
   })
@@ -384,9 +382,31 @@ shinyServer(function(input, output) {
   })
   
   
-  #######################################################
-  # Pop Up
-  #######################################################
+  # 5.1.3. Slider Input UI ----------------------------------------------
+  output$max_week_slider_input = renderUI({
+    if(input$Mode == "지난 학기 수강생"){
+      max_week = max(as.numeric(long_last_year_qna$week))
+    }else if(input$Mode == "현재 학기 수강생"){
+      max_week = max(as.numeric(long_this_year_qna$week))
+    }
+    
+    sliderInput(
+      inputId = "Select_Week", 
+      # label = h4(p(strong("주차 선택"))),
+      label = NULL,
+      step = 1,
+      min = 1,
+      max = max_week,
+      value = 1,
+      post = "주차",
+      width = "100%"
+    )
+  })
+  
+  
+  # 5.2. Pop-Up Page ----------------------------------------------
+  # 5.2.1. Line Plot ----------------------------------------------
+  # Q&A 게시글 수
   output$Weekly_Mean_QNA_Post_Plot = renderPlotly({
     
     if(input$Mode == "지난 학기 수강생"){
@@ -434,7 +454,7 @@ shinyServer(function(input, output) {
       onRender(legend_disable_js)
   })
   
-  
+  # Q&A 댓글 수
   output$Weekly_Mean_QNA_Reply_Plot = renderPlotly({
     
     
@@ -473,6 +493,7 @@ shinyServer(function(input, output) {
       config(displayModeBar = F)
   })
   
+  # 팀플 게시글 수
   output$Weekly_Mean_Team_Post_Plot = renderPlotly({
     pal = fn_change_color(choices = "ALL", type = input$Mode)
     
@@ -511,7 +532,7 @@ shinyServer(function(input, output) {
       config(displayModeBar = F)
   })
   
-  
+  # 팀플 댓글 수
   output$Weekly_Mean_Team_Reply_Plot = renderPlotly({
     pal = fn_change_color(choices = "ALL", type = input$Mode)
     
@@ -550,6 +571,9 @@ shinyServer(function(input, output) {
       config(displayModeBar = F)
   })
   
+  
+  # 5.2.2. Pop-Up UI ----------------------------------------------
+  # Pop-Up Title
   output$Pop_Up_title = renderUI({
     if(input$Mode == "지난 학기 수강생"){
       title_text = "지난 학기 수강생 학습활동 요약보기"  
@@ -563,7 +587,7 @@ shinyServer(function(input, output) {
     )
   })
   
-  
+  # Pop-Up 설명
   output$Pop_Up_Description = renderUI({
     if(input$Mode == "지난 학기 수강생"){
       description = "성적 그룹별 추이, 나와 유사한 학습자 추이, 최고점/최저점 학습자 추이는 학기 종료시점의 총점을 기준으로 제공됩니다."  
@@ -575,6 +599,7 @@ shinyServer(function(input, output) {
         h5(description))
   })
   
+  # Pop-Up SelectInput
   output$Pop_Up_SelectInput = renderUI({
     if(input$Mode == "지난 학기 수강생"){
       choice_list = c("성적 그룹별 추이 보기", 
@@ -609,6 +634,7 @@ shinyServer(function(input, output) {
     )
   })
   
+  # Pop-Up Plot
   output$Pop_Up_Plot = renderUI({
     
     fluidRow(
