@@ -7,6 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 
+# options(encoding = "UTF-8")
 # 필요한 패키지만 설치
 required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets")
 
@@ -29,8 +30,8 @@ library(shinyBS)
 
 
 
-base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
-# base_path = "."
+# base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
+base_path = "."
 source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
 
 
@@ -43,7 +44,7 @@ showtext_opts(dpi = 112)
 
 
 # 0. Set My Data(x11, x34, x43)
-my_data = "x34"
+my_data = "x43"
 jitter_value = 0
 
 # 1. Load Data
@@ -186,76 +187,6 @@ long_this_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 게시글 �
 long_this_weekly_score[, `팀플 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
 long_this_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
 
-
-javascript_legend = "function(el, x){
-                el.on('plotly_legendclick', function() { return false; })
-             }"
-
-# document.getElementsByClassName('scatterlayer')[4].getElementsByClassName('scatter')[data.points[0].curveNumber].getElementsByClassName('point')[data.points[0].pointNumber];
-javascript = "function(el, x){
-                el.on('plotly_click', function(data) {
-                  var plot_len = document.getElementsByClassName('scatterlayer').length
-                  if(plot_len > 6){
-                    plot_len = plot_len - 4
-                  }
-                  
-                  var point_arr = new Array(plot_len);
-                  var old_point_arr = new Array(plot_len);
-                  var plotly_div_arr = new Array(plot_len);
-                  
-                  var old_curve_num = data.points[0].curveNumber;
-                  var curve_num = data.points[0].curveNumber;
-                  var point_num = data.points[0].pointNumber;
-                  
-                  console.log('curve_num: ', String(curve_num));
-                  console.log('point_num: ', String(point_num));
-                  
-                  if(document.getElementsByClassName('scatterlayer').length == 6){
-                    var ref_plot_num = 0;
-                  } else {
-                    var ref_plot_num = 2
-                  }
-                  
-                  console.log('max_curve_: ', String(document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length));
-                  
-                  if(curve_num >= document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length){
-                    curve_num = curve_num - document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length
-                  }
-                  
-                  console.log('curve_num: ', String(curve_num));
-                  
-                  for(i=0; i<plot_len; i++) {
-                    console.log('curve_num: ', String(curve_num));
-                    point_arr[i] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[point_num];
-                    plotly_div_arr[i] =  document.getElementsByClassName('plotly')[i];
-                  }
-                  
-                  for(i=0; i<plot_len; i++) {
-                    if (plotly_div_arr[i].backup !== undefined) {
-                      if ( plotly_div_arr[i].backup.curveNumber < document.getElementsByClassName('scatterlayer')[ref_plot_num].getElementsByClassName('scatter').length){
-                        console.log('plotly_div_arr[', i, '].backup curveNumber : ', plotly_div_arr[i].backup.curveNumber);
-                        console.log('plotly_div_arr[', i, '].backup point_num : ', plotly_div_arr[i].backup.pointNumber);    
-    
-                        old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
-                        if (old_point_arr[0] !== undefined) {
-                          old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
-                        } 
-                      }
-                    } 
-                  }
-                  
-                  for(i=0; i<plot_len; i++) {
-                    plotly_div_arr[i].backup = {curveNumber: curve_num,
-                                                pointNumber: point_num,
-                                                d: point_arr[i].attributes['d'].value,
-                                                style: point_arr[i].attributes['style'].value
-                                                };
-                  }
-                  for(i=0; i<plot_len; i++) {
-                    point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
-                  }
-                });
-              }"
 
 
 # Define server logic required to draw a histogram
@@ -401,7 +332,7 @@ shinyServer(function(input, output) {
     
     test_plot %>%
       config(displayModeBar = F) %>%
-      onRender(javascript)
+      onRender(click_event_js)
   })
   
   
@@ -425,7 +356,7 @@ shinyServer(function(input, output) {
     
     qna_plot %>% 
       config(displayModeBar = F) %>%
-      onRender(javascript)
+      onRender(click_event_js)
   })
   
   
@@ -449,7 +380,7 @@ shinyServer(function(input, output) {
     
     team_plot %>% 
       config(displayModeBar = F) %>%
-      onRender(javascript)  
+      onRender(click_event_js)  
   })
   
   
@@ -500,7 +431,7 @@ shinyServer(function(input, output) {
     ggplotly(g)%>% 
       config(displayModeBar = F) %>%
         layout(showlegend = TRUE, legend = list(orientation = "h", y = 1.4)) %>%
-      onRender(javascript_legend)
+      onRender(legend_disable_js)
   })
   
   
@@ -722,12 +653,7 @@ shinyServer(function(input, output) {
                div(style = "margin-top:-45px;", plotlyOutput(outputId = "Weekly_Mean_QNA_Reply_Plot", height = "170px")),
                div(style = "margin-top:-45px;", plotlyOutput(outputId = "Weekly_Mean_Team_Post_Plot", height = "170px")),
                div(style = "margin-top:-45px;", plotlyOutput(outputId = "Weekly_Mean_Team_Reply_Plot", height = "170px"))
-               # plotlyOutput(outputId = "Weekly_Mean_QNA_Post_Plot", height = "190px")
-               # plotlyOutput(outputId = "Weekly_Mean_QNA_Reply_Plot", height = "170px"),
-               # plotlyOutput(outputId = "Weekly_Mean_Team_Post_Plot", height = "170px"),
-               # plotlyOutput(outputId = "Weekly_Mean_Team_Reply_Plot", height = "170px")
              )
-             # plotlyOutput(outputId = "Weekly_Summary_Plot")
       )
     )    
   })

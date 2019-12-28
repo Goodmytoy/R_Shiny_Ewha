@@ -5,6 +5,7 @@
 # Find out more about building applications with Shiny here:
 # 
 #    http://shiny.rstudio.com/
+# options(encoding = "UTF-8")
 
 library(data.table)
 library(plotly)
@@ -29,29 +30,10 @@ shinyUI(fixedPage(
            br(),
            h5("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다."),
            h5("나의 활동 및 성적을 지난학기 수강생들의 활동 및 성적, 또는 이번학기 수강생들의 활동 및 성적과 비교해 볼 수 있습니다. ")
-      # h6("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다"),
-      # #br(),
-      # h6("먼저 [모드(Mode)]를 선택합니다."),
-      # h6("‘지난 학기 수강생’ 모드를 선택한 경우에는 지난 학기에 이 과목을 수강했던 학습자들의 정보와 나의 정보를 비교하게 됩니다."), 
-      # h6("‘현재 학기 수강생’ 모드를 선택한 경우에는 이번 학기에 이 과목을 나와 함께 수강하고 있는 학습자들의 정보와 나의 정보를 비교하게 됩니다."),
-      # #br(),
-      # h6("다음으로, 화면 상단에서 [성적 비교 집단]을 선택할 수 있습니다. 궁금한 성적대를 체크하면 해당 성적을 받았던 학습자들의 정보가 다른 색으로 변합니다. 중복체크도 가능하며, 체크해제도 가능합니다."),
-      # h6("단, 이 기능은 ‘지난 학기 수강생’ 모드에서만 사용할 수 있으며, ‘현재 학기 수강생’ 모드에서는 사용할 수 없습니다."),
-      # #br(),
-      # h6("화면 왼쪽에는 [시험 점수]가 표시됩니다. 화면 오른쪽에는 [온라인 학습참여] 에 대한 정보가 표시됩니다. [온라인 학습참여]의 경우 하단의 ‘주차 선택 슬라이더’를 움직이면 해당 주차의 학습활동을 확인할 수 있습니다."),
-      # #br(),
-      # h6("예를 들어, [성적 비교 집단] A와 8주차를 선택했다면 오른쪽 [온라인 학습참여] 박스에서는 A를 받은 학습자들이 8주차에 어떤 학습 활동을 했는지 확인할 수 있습니다. 이때 왼쪽의 [시험 점수] 는 주차별로 나오지 않고, A를 받은 학습자들의 중간고사와 기말고사 점수만 확인할 수 있습니다."),
-      # #br(),
-      # h6("만약 특정 학습자의 전체 학습 활동과 성적이 궁금하다면 각 축에서 해당 점(즉, 학습자)을 클릭해 보십시오. 그러면 그 학습자의 학습 활동이나 성적 정보가 모든 축에서 큰 점으로 나타날 것입니다."),
-      # # br(),
-      # h6("* 참고: 학습 기간 전체의 추이를 확인하려면 슬라이더 옆의 [요약 보기]를 클릭하십시오.")
-    
   )),
   
   
   fixedRow(
-    # column(width = 8,
-    #   fluidRow(
         column(width = 1, offset = 1, align = "left",
           div(style = "display:inline-block; padding-top: 18px; margin-left: 0px;", 
               h4(p(strong("Mode")))
@@ -63,15 +45,11 @@ shinyUI(fixedPage(
             style = "height: 30px; width: 170px; margin-left: 0px;",
             selectInput(
               inputId = "Mode",
-              # label = h4(p(strong("Mode"))),
               label = NULL,
               choice = c("지난 학기 수강생", "현재 학기 수강생"),
               selected = "지난 학기 수강생"
             ),
           )
-
-
-          # tags$head(tags$style(HTML(".selectize-input {height: 30px; width: 250px; margin-left: 25%;}")))
         )
   ),
   fixedRow(
@@ -85,7 +63,6 @@ shinyUI(fixedPage(
           div(style = "display:inline-block; margin-left: 0px;", # -120%
             checkboxGroupInput(
               inputId = "Grade_Compare_Group", 
-              # label = h4(p(strong("성적 비교 집단"))), 
               label = NULL,
               choiceNames = list(
                 tags$span("A", style = "color: rgb(102,176,226); font-weight: bold; font-size: large; margin-right : 50%;"),
@@ -94,7 +71,6 @@ shinyUI(fixedPage(
                 tags$span("D이하", style = "color: rgb(158,200,110); font-weight: bold; font-size: large; margin-right : 20px;")
               ),
               choiceValues = c("A", "B", "C", "D"),
-              # colors = c("orange", "blue", "purple", "green"),
               inline = TRUE
             )   
           )
@@ -104,8 +80,8 @@ shinyUI(fixedPage(
   ),
   fluidRow(height = 300,
     column(width = 3, offset = 1,
-      tags$style(type = "text/css", "#Mid_Test_Score_Summary { font-size: 9.8px; }
-                                     #Final_Test_Score_Summary { font-size: 9.8px; }"),
+      tags$style(type = "text/css", "#Mid_Test_Score_Summary { font-size: 10.7px; }
+                                     #Final_Test_Score_Summary { font-size: 10.7px; }"),
       wellPanel(
         verticalLayout(
           plotlyOutput(outputId = "Test_Score_Plot"),
@@ -118,10 +94,10 @@ shinyUI(fixedPage(
     )
     ,
     column(width = 7, offset = 0, 
-      tags$style(type = "text/css", "#Online_QNA_Post_Summary { font-size: 9.8px; }
-                                     #Online_QNA_Reply_Summary { font-size: 9.8px; }
-                                     #Online_Team_Post_Summary { font-size: 9.8px; }
-                                     #Online_Team_Reply_Summary { font-size: 9.8px; }"),
+      tags$style(type = "text/css", "#Online_QNA_Post_Summary { font-size: 10.7px; }
+                                     #Online_QNA_Reply_Summary { font-size: 10.7px; }
+                                     #Online_Team_Post_Summary { font-size: 10.7px; }
+                                     #Online_Team_Reply_Summary { font-size: 10.7px; }"),
       wellPanel(
         fluidRow(
           column(width = 5, offset = 1,
