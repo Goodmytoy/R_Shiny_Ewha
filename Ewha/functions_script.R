@@ -72,6 +72,7 @@ fn_draw_line_plot = function(data,
                              this_data, 
                              y, 
                              pal, 
+                             x_axis = TRUE,
                              legend = TRUE, 
                              my_data = NA, 
                              my_data_y = NA, 
@@ -94,28 +95,43 @@ fn_draw_line_plot = function(data,
   
   
   
-  # if(browser == TRUE){
-  #   browser()
-  # }
+  if(browser == TRUE){
+    # browser()
+  }
   # 해당 데이터가 가지고 있는 max week을 구한다.
   max_week = max(as.integer(data[,week]))
   # 성적등급별, 주차별 Unique한 데이터만 사용한다.
   # (여러 학생이 있는 경우 그 중 첫번쨰 학생만 적용)
   temp_data = unique(data, by = c("성적등급", "week"))
-  if(grepl("그룹별", y) == FALSE){
-    temp_data[,성적등급 := strsplit(y, " ")[[1]][length(strsplit(y, " ")[[1]])]]
-    temp_data = unique(temp_data, by = c(y, "성적등급", "week"))
-    # temp_data[, 성적등급 := afactor(temp_data$성적등급, levels = c(y, "나의 점수"))]
-    pal = c("red", pal[1])
-  }
+  
   pal = c(pal, "red")
   
+  if(grepl("그룹별", y) == FALSE){
+    temp_data = unique(data, by = c(y, "week"))[,c("수강생", y, "성적등급", "실험집단", "week"), with = F]
+    temp_data[,성적등급 := strsplit(y, " ")[[1]][length(strsplit(y, " ")[[1]])]]
+    temp_data = na.omit(temp_data)
+    pal = c("red", pal[1])
+  }
+  
+  if(max_week < 15){
+    temp = data.table(week = 1:15)
+    temp$week = factor(temp$week)
+    
+    temp_data = merge(temp, temp_data, by = "week", all.x = TRUE)
+    temp_data[, `:=` (`수강생` = rep(temp_data[1, `수강생`], 15), 
+                      `실험집단` = rep(temp_data[1, `실험집단`], 15), 
+                      `성적등급` = rep(temp_data[1, `성적등급`], 15))]
+  }
+
+  
   # Plotting (ggplot)
-  g = ggplot(temp_data, aes_string(x = "week", y = paste0("`", y, "`"), group = "수강생", color = "성적등급")) +
+  g = ggplot(temp_data, aes_string(x = "week", y = paste0("`", y, "`"), group = "수강생", color = "성적등급"), na.rm = F) +
     scale_colour_manual(values = pal) +
     geom_line() +
     geom_point() + 
-    scale_x_discrete(labels = paste0(rep(1:max_week), "주차")) +
+    ylim(-1, 21) + 
+    # scale_x_discrete(labels = paste0(rep(1:max_week), "주차")) +
+    scale_x_discrete(labels = paste0(rep(1:15), "주차")) +
     theme(plot.title = element_text(hjust = 0.5, face="bold"),
           axis.text = element_text(face="bold"),
           axis.title.x = element_blank(),
@@ -137,13 +153,27 @@ fn_draw_line_plot = function(data,
     g = g + theme(legend.position = "none")
   }
   
+  if(x_axis == FALSE){
+    g = g + theme(axis.ticks = element_blank(),
+                  axis.text.x = element_blank())
+  }
+  
   
   return(ggplotly(g, tooltip = c("week", y)))
 }
 
 
 
-fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, jitter = 0.1, browser = FALSE){
+fn_draw_strip_plot = function(data, 
+                              this_data, 
+                              y, 
+                              type_vec, 
+                              pal,
+                              week_num = NULL,
+                              y_max = 21,
+                              my_data = NA, 
+                              jitter = 0.1,
+                              browser = FALSE){
   
   # Description:
   #   strip plot를 그리는 함수
@@ -162,11 +192,17 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
   # Returns:
   #   Plotly 형태의 그래프 object 반환
   
-  # if(browser == TRUE){
-  #   browser()
-  # }
+  if(browser == TRUE){
+    # browser()
+  }
   # 2개의 빈 리스트를 생성(type 길이에 맞추지만 여기서는 길이가 2로 제한되어 있으므로)
   plot_list = vector("list", length = 2)
+
+  # data = data[week %in% week_num]
+  # if(nrow(data[week %in% week_num]) == 0){
+  #   data = data[week %in% 1][, `:=` (week = rep(week_num, nrow(data[week %in% 1])), count = NA)]
+  # }
+  
   
   for(i in 1:length(type_vec)){
     # 해당 type에 맞는 데이터만 추출하여 temp_data로 저장
@@ -193,7 +229,9 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
     plot_list[[i]] = ggplot(temp_data, aes_string(x = "type", y = paste0("`", y, "`"), color = "성적등급")) + 
       scale_colour_manual(values = pal) +
       geom_jitter(position = position_jitter(jitter), cex = 1.3) +
+      # geom_point(cex = 1.3) +
       labs(title = title, x = "구분", y = "점수") +
+      ylim(-1, y_max+1) +
       theme(plot.title = element_text(hjust = 0.5, face="bold"),
             axis.title.x = element_blank(),
             axis.title.y = element_blank(),
@@ -205,13 +243,6 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
             axis.ticks.x = element_blank(),
             legend.position = "none") 
     
-    # 시험 점수를 그리는 경우에는 Y 범위를 0부터 100으로 제한
-    if(y == "score"){
-      plot_list[[i]] = plot_list[[i]] + ylim(-1, 101)
-    } else {
-      
-      plot_list[[i]] = plot_list[[i]] + ylim(min(temp_data[, y, with = FALSE]) - 1, max(temp_data[,y, with = FALSE]) + 1)
-    }
     
     
     
@@ -220,7 +251,7 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
       # 해당 type이 데이터에 존재할 때만 표시
       if(type_vec[i] %in% this_data[,type]){
         plot_list[[i]] = plot_list[[i]] + geom_point(data = this_data[type == type_vec[i] & 수강생 == my_data,], 
-                                                     position = position_jitter(jitter), 
+                                                     position = position_jitter(jitter),
                                                      cex = 3, 
                                                      shape = 18,
                                                      color = "red")   
@@ -231,7 +262,7 @@ fn_draw_strip_plot = function(data, this_data, y, type_vec, pal, my_data = NA, j
   if(sum(sapply(plot_list, is.null)) == 0){
     g1 = ggplotly(plot_list[[1]], tooltip = c("x", "y", "color"))
     g2 = ggplotly(plot_list[[2]], tooltip = c("x", "y", "color"))
-    result_plot = subplot(g1, g2, shareY = TRUE)
+    result_plot = subplot(g1, g2, shareY = TRUE, which_layout = 1)
   }else{
     result_plot = ggplotly(plot_list[[1]], tooltip = c("x", "y"))
   }
@@ -251,12 +282,21 @@ legend_disable_js = "function(el, x){
 click_event_js = "
 function(el, x){
     el.on('plotly_click', function(data) {
+        // Click Event를 적용할 Plot의 수를 지정
+        // --> Scatter Plot의 개수
         var plot_len = document.getElementsByClassName('scatterlayer').length
+
+        // Pop-Up 창이 활성화 된 이후에는 전체 Plot의 수가 4개가 추가되므로 이를 제거 
+        //   지난 학기 : 10개 Plot
+        //   현재 학기 : 9개 Plot 
         if(plot_len > 6){
             plot_len = plot_len - 4
         }
-
+        
+        // Click한 Point가 있는 Plot의 Curve 개수
         var clicked_plot_curve_len = el.getElementsByClassName('scatter').length;
+        
+        // 적용할 Plot의 개수에 맞춰 Point, div 등의 Array 생성
         var point_arr = new Array(plot_len);
         var old_point_arr = new Array(plot_len);
         var plotly_div_arr = new Array(plot_len);
@@ -269,38 +309,49 @@ function(el, x){
         console.log('data: ', String(data));
         console.log('curve_num: ', String(curve_num));
         console.log('point_num: ', String(point_num));
-
+        
+        // Click한 Point가 있는 Plot의 Curve 개수의 절반의 올림값보다, 값이 크게 나오는 경우는 Subplot의 2번째 Plot을 클릭한 경우 이므로,
+        // curve_num을 그만큼 줄여 조정해준다.
         if(curve_num >= Math.ceil(clicked_plot_curve_len / 2)){
             curve_num = curve_num - Math.ceil(clicked_plot_curve_len / 2);
         }
         
-        if(document.getElementsByClassName('scatter')[curve_num].getElementsByClassName('point').length == 1){
+        //나의 점수는 확대가 되지 않도록 설정
+        // 길이가 1인(나의 점수는 1개의 점이므로) 점을 클릭한 경우 함수를 종료
+        if(document.getElementsByClassName('scatter')[curve_num].getElementsByClassName('point').length == 0){
             return;
         }
           
-          console.log('curve_num: ', String(curve_num));
+        console.log('curve_num: ', String(curve_num));
         
         for(i=0; i<plot_len; i++) {
+            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
+                continue;
+            }
             console.log('curve_num: ', String(curve_num));
             point_arr[i] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[point_num];
             plotly_div_arr[i] =  document.getElementsByClassName('plotly')[i];
         }
         
         for(i=0; i<plot_len; i++) {
+            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
+                continue;
+            }
             if (plotly_div_arr[i].backup !== undefined) {
-                if ( plotly_div_arr[i].backup.curveNumber < document.getElementsByClassName('scatterlayer')[0].getElementsByClassName('scatter').length){
-                    console.log('plotly_div_arr[', i, '].backup curveNumber : ', plotly_div_arr[i].backup.curveNumber);
-                    console.log('plotly_div_arr[', i, '].backup point_num : ', plotly_div_arr[i].backup.pointNumber);    
+                console.log('plotly_div_arr[', i, '].backup curveNumber : ', plotly_div_arr[i].backup.curveNumber);
+                console.log('plotly_div_arr[', i, '].backup point_num : ', plotly_div_arr[i].backup.pointNumber);    
 
-                    old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
-                    if (old_point_arr[0] !== undefined) {
-                        old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
-                    } 
-                }
+                old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
+                if (old_point_arr[0] !== undefined) {
+                    old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
+                } 
             } 
         }
         
         for(i=0; i<plot_len; i++) {
+            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
+                continue;
+            }
             plotly_div_arr[i].backup = {curveNumber: curve_num,
                                         pointNumber: point_num,
                                         d: point_arr[i].attributes['d'].value,
@@ -308,6 +359,9 @@ function(el, x){
                                         };
         }
         for(i=0; i<plot_len; i++) {
+            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
+                continue;
+            }
             point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
         }
     });

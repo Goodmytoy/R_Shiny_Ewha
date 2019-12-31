@@ -34,8 +34,8 @@ library(shinyBS)
 
 # 1. 경로 설정 ----------------------------------------------
 # 데이터 및 functions_script 경로 지정
-base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
-# base_path = "."
+# base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
+base_path = "."
 source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
 
 
@@ -51,7 +51,7 @@ showtext_opts(dpi = 112)
 
 # 3. 데이터 Loading ----------------------------------------------
 # Set My Data(x11, x34, x43)
-my_data = "x43"
+my_data = "x11"
 jitter_value = 0
 
 # Load Data
@@ -61,6 +61,7 @@ last_total_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"),
 this_test_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 5))
 this_weekly_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx"), sheet = 6))
 
+
 # 데이터의 순서를 맞춰준다.
 # 추후, Plotly click event 발생 시 point_number가 동일하게 지정될 수 있도록
 last_test_score[order(수강생)]
@@ -68,6 +69,9 @@ last_weekly_score[order(수강생)]
 last_total_score[order(수강생)]
 this_test_score[order(수강생)]
 this_weekly_score[order(수강생)]
+
+
+
 
 
 
@@ -109,31 +113,32 @@ long_this_year_team = melt(long_this_weekly_score,
                            value.name = "count")
 long_this_year_team[,"성적등급" := "NA"]
 
+
 # 4.1.3. Group by Weekly Data ----------------------------------------------
 #전체 학습자
 long_this_weekly_score[, `Q&A 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 댓글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`팀플 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`Q&A 댓글 수`), by = list(week)]
 
 # 나와 유사한 학습자
 my_score = this_test_score[수강생 == my_data, 중간점수]
 similar_student = this_test_score[중간점수 >= (my_score - (100 * 0.05)) & 중간점수 <= (my_score + (100 * 0.05)), 수강생]
 long_this_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 댓글 수`), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`팀플 게시글 수`), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`팀플 댓글 수`), by = list(week)]
 # 최고점 학습자
 long_this_weekly_score[, `Q&A 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `Q&A 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `Q&A 댓글 수 평균 최고` := max(`Q&A 댓글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 게시글 수 평균 최고` := max(`팀플 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 댓글 수 평균 최고` := max(`팀플 댓글 수`), by = list(week)]
 
 # 최저점 학습자
 long_this_weekly_score[, `Q&A 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
+long_this_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 댓글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 게시글 수 평균 최저` := min(`팀플 게시글 수`), by = list(week)]
+long_this_weekly_score[, `팀플 댓글 수 평균 최저` := min(`팀플 댓글 수`), by = list(week)]
 
 
 
@@ -173,38 +178,41 @@ long_last_year_team = melt(long_last_weekly_score,
                            variable.name = "type",
                            value.name = "count")
 
+# Y축 최대값을 정하기 위해 max_count를 구한다.
+max_count = max(c(long_last_year_qna[,count], long_last_year_team[,count], long_this_year_qna[,count], long_this_year_team[,count]))
+
 # 4.2.3. Group by Weekly Data ----------------------------------------------
 # 성적 그룹별
 long_last_weekly_score[, `Q&A 게시글 수 평균 그룹별` := mean(`Q&A 게시글 수`), by = list(성적등급, week)]
-long_last_weekly_score[, `Q&A 댓글 수 평균 그룹별` := mean(`Q&A 게시글 수`), by = list(성적등급, week)]
-long_last_weekly_score[, `팀플 게시글 수 평균 그룹별` := mean(`Q&A 게시글 수`), by = list(성적등급, week)]
-long_last_weekly_score[, `팀플 댓글 수 평균 그룹별` := mean(`Q&A 게시글 수`), by = list(성적등급, week)]
+long_last_weekly_score[, `Q&A 댓글 수 평균 그룹별` := mean(`Q&A 댓글 수`), by = list(성적등급, week)]
+long_last_weekly_score[, `팀플 게시글 수 평균 그룹별` := mean(`팀플 게시글 수`), by = list(성적등급, week)]
+long_last_weekly_score[, `팀플 댓글 수 평균 그룹별` := mean(`팀플 댓글 수`), by = list(성적등급, week)]
 
 # 전체 학습자
 long_last_weekly_score[, `Q&A 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
+long_last_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 댓글 수`), by = list(week)]
+long_last_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`팀플 게시글 수`), by = list(week)]
+long_last_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`팀플 댓글 수`), by = list(week)]
 
 # 나와 유사한 학습자
 my_score = this_test_score[수강생 == my_data, 중간점수]
 similar_student = last_test_score[중간점수 >= (my_score - (100 * 0.05)) & 중간점수 <= (my_score + (100 * 0.05)), 수강생]
 long_last_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
+long_last_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 댓글 수`), by = list(week)]
+long_last_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`팀플 게시글 수`), by = list(week)]
+long_last_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`팀플 댓글 수`), by = list(week)]
 
 # 최고점 학습자
 long_last_weekly_score[, `Q&A 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `Q&A 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 댓글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
+long_last_weekly_score[, `Q&A 댓글 수 평균 최고` := max(`Q&A 댓글 수`), by = list(week)]
+long_last_weekly_score[, `팀플 게시글 수 평균 최고` := max(`팀플 게시글 수`), by = list(week)]
+long_last_weekly_score[, `팀플 댓글 수 평균 최고` := max(`팀플 댓글 수`), by = list(week)]
 
 # 최저점 학습자
 long_last_weekly_score[, `Q&A 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 게시글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글 수`), by = list(week)]
+long_last_weekly_score[, `Q&A 댓글 수 평균 최저` := min(`Q&A 댓글 수`), by = list(week)]
+long_last_weekly_score[, `팀플 게시글 수 평균 최저` := min(`팀플 게시글 수`), by = list(week)]
+long_last_weekly_score[, `팀플 댓글 수 평균 최저` := min(`팀플 댓글 수`), by = list(week)]
 
 
 
@@ -212,6 +220,14 @@ long_last_weekly_score[, `팀플 댓글 수 평균 최저` := min(`Q&A 게시글
 # 5. Shiny Server ----------------------------------------------
 shinyServer(function(input, output) {
   # 5.1 Main Page ----------------------------------------------
+  # 5.0 Mydata Image
+  output$My_Data_Img = renderImage({
+    list(src = paste0(base_path, "/data/My_Data_Img.png"),
+         contentType = "image/png",
+         width = 100,
+         height = 100)
+    
+  })
   # 5.1.1. Text Output ----------------------------------------------
   # -->  (Mean, Standard Deviance)
   ## 시험점수 (Test Score)
@@ -224,10 +240,12 @@ shinyServer(function(input, output) {
     }
     
     test_score_data = test_score_data[type == "중간점수",]  
+    score_mean = ifelse(is.nan(round(mean(test_score_data$score),2))," ", round(mean(test_score_data$score),2))
+    score_sd = ifelse(is.na(round(sd(test_score_data$score),2))," ", round(mean(test_score_data$score),2))
     
     cat(paste0("<중간점수> \n",
-               "평균: ", round(mean(test_score_data$score),2), "점\n", 
-               "표준편차: ", round(sd(test_score_data$score),2)))
+               "평균: ", score_mean, "점\n", 
+               "표준편차: ", score_sd))
   })
   
   # 기말점수 (Mid Test Score)
@@ -239,10 +257,12 @@ shinyServer(function(input, output) {
     }
     
     test_score_data = test_score_data[type == "기말점수",]
+    score_mean = ifelse(is.nan(round(mean(test_score_data$score),2)),"", round(mean(test_score_data$score),2))
+    score_sd = ifelse(is.na(round(sd(test_score_data$score),2)),"", round(mean(test_score_data$score),2))
     
     cat(paste0("<기말점수> \n",
-               "평균: ", round(mean(test_score_data$score),2), "점\n", 
-               "표준편차: ", round(sd(test_score_data$score),2)))
+               "평균: ", score_mean, "점\n", 
+               "표준편차: ", score_sd))
   })
   
   ## 온라인 Q&A 참여 (Online Q&A)
@@ -255,10 +275,12 @@ shinyServer(function(input, output) {
     }
     
     online_qna_data = online_qna_data[week %in% as.numeric(input$Select_Week) & type == "Q&A 게시글 수",]
+    count_mean = ifelse(is.nan(round(mean(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
+    count_sd = ifelse(is.na(round(sd(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
     
     cat(paste0("<Q&A 게시글 수> \n",
-               "평균: ", round(mean(online_qna_data$count),2), "개\n", 
-               "표준편차: ", round(sd(online_qna_data$count),2)))
+               "평균: ", count_mean, "개\n", 
+               "표준편차: ", count_sd))
   })
   
   # Q&A 댓글 수 (Q&A Reply)
@@ -270,10 +292,12 @@ shinyServer(function(input, output) {
     }
     
     online_qna_data = online_qna_data[week %in% as.numeric(input$Select_Week) & type == "Q&A 댓글 수",]
+    count_mean = ifelse(is.nan(round(mean(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
+    count_sd = ifelse(is.na(round(sd(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
     
     cat(paste0("<Q&A 댓글 수> \n",
-               "평균: ", round(mean(online_qna_data$count),2), "개\n", 
-               "표준편차: ", round(sd(online_qna_data$count),2)))
+               "평균: ", count_mean, "개\n", 
+               "표준편차: ", count_sd))
   })
   
   ## 온라인 토론 참여 (Online Team)
@@ -286,10 +310,12 @@ shinyServer(function(input, output) {
     }
     
     online_team_data = online_team_data[week %in% as.numeric(input$Select_Week) & type == "팀플 게시글 수",]
+    count_mean = ifelse(is.nan(round(mean(online_team_data$count),2)),"", round(mean(online_team_data$count),2))
+    count_sd = ifelse(is.na(round(sd(online_team_data$count),2)),"", round(mean(online_team_data$count),2))
     
     cat(paste0("<팀플 게시글 수> \n",
-               "평균: ", round(mean(online_team_data$count),2), "개\n", 
-               "표준편차: ", round(sd(online_team_data$count),2)))
+               "평균: ", count_mean, "개\n", 
+               "표준편차: ", count_sd))
   })
   
   # 팀플 댓글 수 (Team Reply)
@@ -302,9 +328,12 @@ shinyServer(function(input, output) {
     
     online_team_data = online_team_data[week %in% as.numeric(input$Select_Week) & type == "팀플 댓글 수",]
     
+    count_mean = ifelse(is.nan(round(mean(online_team_data$count),2)),"", round(mean(online_team_data$count),2))
+    count_sd = ifelse(is.na(round(sd(online_team_data$count),2)),"", round(mean(online_team_data$count),2))    
+    
     cat(paste0("<팀플 댓글 수> \n",
-               "평균: ", round(mean(online_team_data$count),2), "개\n", 
-               "표준편차: ", round(sd(online_team_data$count),2)))
+               "평균: ", count_mean, "개\n", 
+               "표준편차: ", count_sd))
   })
   
   
@@ -316,6 +345,8 @@ shinyServer(function(input, output) {
       test_score_data = long_last_test_score
     }else if(input$Mode == "현재 학기 수강생"){
       test_score_data = long_this_test_score
+      test_score_data = test_score_data[수강생 != my_data,]
+      test_score_data = rbind(test_score_data, test_score_data[1,][,`:=` (type = "기말점수", score = NA)])
     }
     
     set.seed(100)
@@ -325,6 +356,7 @@ shinyServer(function(input, output) {
                                    type_vec = c("중간점수", "기말점수"),
                                    pal = pal,
                                    my_data = my_data, 
+                                   y_max = 100,
                                    jitter = jitter_value)
     
     
@@ -337,19 +369,27 @@ shinyServer(function(input, output) {
   
   output$Online_QNA_Plot = renderPlotly({
     pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
-    
+    select_week = as.numeric(input$Select_Week)
+    # select_week = 10
     if(input$Mode == "지난 학기 수강생"){
       online_qna_data = long_last_year_qna
     }else if(input$Mode == "현재 학기 수강생"){
       online_qna_data = long_this_year_qna
+      online_qna_data = online_qna_data[수강생 != my_data,]
     }
     set.seed(100)
-    qna_plot = fn_draw_strip_plot(data = online_qna_data[week %in% as.numeric(input$Select_Week)],
-                                  this_data = long_this_year_qna[week %in% as.numeric(input$Select_Week)],
+    input_data = online_qna_data[week %in% select_week]
+    if(nrow(online_qna_data[week %in% select_week]) == 0){
+      input_data = online_qna_data[week %in% 1][, `:=` (week = rep(select_week, nrow(online_qna_data[week %in% 1])), count = NA)]
+    }
+    
+    qna_plot = fn_draw_strip_plot(data = input_data,
+                                  this_data = long_this_year_qna[week %in% select_week],
                                   y = "count",
                                   type_vec = c("Q&A 게시글 수", "Q&A 댓글 수"),
                                   pal = pal,
                                   my_data = my_data,
+                                  y_max = max_count,
                                   jitter = jitter_value)
     
     qna_plot %>% 
@@ -360,21 +400,30 @@ shinyServer(function(input, output) {
   
   output$Online_Team_Plot = renderPlotly({
     pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
+    select_week = as.numeric(input$Select_Week)
     
     if(input$Mode == "지난 학기 수강생"){
       online_team_data = long_last_year_team
     }else if(input$Mode == "현재 학기 수강생"){
       online_team_data = long_this_year_team
+      online_team_data = online_team_data[수강생 != my_data,]
     }
     
     set.seed(100)
-    team_plot = fn_draw_strip_plot(data = online_team_data[week %in% as.numeric(input$Select_Week)],
-                                   this_data = long_this_year_team[week %in% as.numeric(input$Select_Week)],
+    input_data = online_team_data[week %in% select_week]
+    if(nrow(online_team_data[week %in% select_week]) == 0){
+      input_data = online_team_data[week %in% 1][, `:=` (week = rep(select_week, nrow(online_team_data[week %in% 1])), count = NA)]
+    }
+    
+    team_plot = fn_draw_strip_plot(data = input_data,
+                                   this_data = long_this_year_team[week %in% select_week],
                                    y = "count",
                                    type_vec = c("팀플 게시글 수", "팀플 댓글 수"),
                                    pal = pal,
                                    my_data = my_data,
-                                   jitter = jitter_value)
+                                   y_max = max_count,
+                                   jitter = jitter_value,
+                                   browser = F)
     
     team_plot %>% 
       config(displayModeBar = F) %>%
@@ -396,11 +445,44 @@ shinyServer(function(input, output) {
       label = NULL,
       step = 1,
       min = 1,
-      max = max_week,
+      # max = max_week,
+      max = 15,
       value = 1,
       post = "주차",
       width = "100%"
     )
+  })
+  
+  output$group_checkbox_input = renderUI({
+    if(input$Mode == "지난 학기 수강생"){
+      fixedRow(
+        column(width = 2, offset = 1, align = "left",
+               div(style = "display:inline-block; padding-top: 12px; margin-left: 0px;", 
+                   h4(p(strong("성적 비교 집단")))
+               )     
+        ),
+        column(width = 5, offset = 0, align = "left",
+               br(),
+               div(style = "display:inline-block; margin-left: 0px;",
+                   checkboxGroupInput(
+                     inputId = "Grade_Compare_Group", 
+                     label = NULL,
+                     choiceNames = list(
+                       tags$span("A", style = "color: rgb(102,176,226); font-weight: bold; font-size: large; margin-right : 50%;"),
+                       tags$span("B", style = "color: rgb(255,189,55); font-weight: bold; font-size: large; margin-right : 50%;"),
+                       tags$span("C", style = "color: rgb(127,108,171); font-weight: bold; font-size: large; margin-right : 50%;"),
+                       tags$span("D이하", style = "color: rgb(158,200,110); font-weight: bold; font-size: large; margin-right : 20px;")
+                     ),
+                     choiceValues = c("A", "B", "C", "D"),
+                     inline = TRUE
+                   )   
+               )
+        )  
+      )
+    } else {
+      br()
+      br()
+    }
   })
   
   
@@ -419,23 +501,18 @@ shinyServer(function(input, output) {
     if(input$Description_Mode == "성적 그룹별 추이 보기"){
       y_val = "Q&A 게시글 수 평균 그룹별"
       pal = fn_change_color(choices = "ALL", type = input$Mode)
-      legend_yn = TRUE
     }else if(input$Description_Mode == "전체 학습자 추이 보기"){
       y_val = "Q&A 게시글 수 평균 전체"
       pal = rep(rgb_green, 4)
-      legend_yn = FALSE
     }else if(input$Description_Mode == "나와 유사한 학습자 추이 보기"){
       y_val = "Q&A 게시글 수 평균 유사"
       pal = rep(rgb_green, 4)
-      legend_yn = FALSE
     }else if(input$Description_Mode == "최고점 학습자 추이 보기"){
       y_val = "Q&A 게시글 수 평균 최고"
       pal = rep(rgb_green, 4)
-      legend_yn = FALSE
     }else if(input$Description_Mode == "최저점 학습자 추이 보기"){
       y_val = "Q&A 게시글 수 평균 최저"
       pal = rep(rgb_green, 4)
-      legend_yn = FALSE
     }
     
     g = fn_draw_line_plot(data = weekly_score, 
@@ -443,9 +520,10 @@ shinyServer(function(input, output) {
                          y = y_val, 
                          pal = pal,
                          legend = TRUE,
+                         x_axis = FALSE,
                          my_data = my_data,
                          my_data_y = "Q&A 게시글 수",
-                         browser = FALSE)
+                         browser = F)
     
     
     ggplotly(g)%>% 
@@ -486,8 +564,10 @@ shinyServer(function(input, output) {
                          y = y_val, 
                          pal = pal,
                          legend = FALSE,
+                         x_axis = FALSE,
                          my_data = my_data,
-                         my_data_y = "Q&A 댓글 수")
+                         my_data_y = "Q&A 댓글 수",
+                         browser = F)
     
     ggplotly(g)%>% 
       config(displayModeBar = F)
@@ -525,6 +605,7 @@ shinyServer(function(input, output) {
                          y = y_val, 
                          pal = pal,
                          legend = FALSE,
+                         x_axis = FALSE,
                          my_data = my_data,
                          my_data_y = "팀플 게시글 수")
     
@@ -564,6 +645,7 @@ shinyServer(function(input, output) {
                          y = y_val, 
                          pal = pal,
                          legend = FALSE,
+                         x_axis = TRUE,
                          my_data = my_data,
                          my_data_y = "팀플 댓글 수")
     
@@ -649,7 +731,7 @@ shinyServer(function(input, output) {
                ),
                
                #
-               div(style = "width: 35%; margin-left: 30px; margin-top: 85px; text-align: center;", 
+               div(style = "width: 35%; margin-left: 30px; margin-top: 125px; text-align: center;", 
                    h5(p(strong("Q&A")))
                ),
                div(style = "width: 60%; margin-left: 30px; margin-top: -20px; text-align: center;", 
@@ -657,7 +739,7 @@ shinyServer(function(input, output) {
                ),
                
                #
-               div(style = "width: 35%; margin-left: 30px; margin-top: 85px; text-align: center;", 
+               div(style = "width: 35%; margin-left: 30px; margin-top: 125px; text-align: center;", 
                    h5(p(strong("팀플")))
                ),
                div(style = "width: 60%; margin-left: 30px; margin-top: -20px; text-align: center;", 
@@ -665,7 +747,7 @@ shinyServer(function(input, output) {
                ),
                
                #
-               div(style = "width: 35%; margin-left: 30px; margin-top: 85px; text-align: center;", 
+               div(style = "width: 35%; margin-left: 30px; margin-top: 125px; text-align: center;", 
                    h5(p(strong("팀플")))
                ),
                div(style = "width: 60%; margin-left: 30px; margin-top: -20px; text-align: center;", 
@@ -676,9 +758,9 @@ shinyServer(function(input, output) {
       column(width = 10,
              verticalLayout(
                div(style = "margin-top:0px;", plotlyOutput(outputId = "Weekly_Mean_QNA_Post_Plot", height = "190px")),
-               div(style = "margin-top:-45px;", plotlyOutput(outputId = "Weekly_Mean_QNA_Reply_Plot", height = "170px")),
-               div(style = "margin-top:-45px;", plotlyOutput(outputId = "Weekly_Mean_Team_Post_Plot", height = "170px")),
-               div(style = "margin-top:-45px;", plotlyOutput(outputId = "Weekly_Mean_Team_Reply_Plot", height = "170px"))
+               div(style = "margin-top:-5px;", plotlyOutput(outputId = "Weekly_Mean_QNA_Reply_Plot", height = "170px")),
+               div(style = "margin-top:-5px;", plotlyOutput(outputId = "Weekly_Mean_Team_Post_Plot", height = "170px")),
+               div(style = "margin-top:-5px;", plotlyOutput(outputId = "Weekly_Mean_Team_Reply_Plot", height = "170px"))
              )
       )
     )    
