@@ -15,7 +15,7 @@ library(shiny)
 library(htmlwidgets)
 library(showtext)
 library(shinyBS)
-
+library(shinyjs)
 
 # 1. 경로 설정 ----------------------------------------------
 font_add_google(name = "Nanum Gothic", regular.wt = 400, bold.wt = 700)
@@ -25,18 +25,19 @@ showtext_opts(dpi = 112)
 
 # 2. Shiny UI ----------------------------------------------
 shinyUI(fixedPage(
+  shinyjs::useShinyjs(),
   # Application title
   titlePanel(h1(p(strong("Find me Find you")), align = "center")),
   
   # Description
   fluidRow(column(width = 10, offset = 1,
            br(),
-           h5("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다."),
-           h5("나의 활동 및 성적을 지난학기 수강생들의 활동 및 성적, 또는 이번학기 수강생들의 활동 및 성적과 비교해 볼 수 있습니다. "),
-           h5("특정한 수강생의 활동 및 성적을 클릭하거나, 성적 비교집단을 클릭하여 나의 활동 및 성적과 비교해보기 바랍니다."),
-           h5("특정한 주차에 대해 자세한 정보를 얻고자 할 경우, 하단의 슬라이더를 이동해 보십시오."),
-           h5("15주차 전체의 정보를 얻고자 할 경우, 슬라이더 우측의 '요약보기'를 클릭하면 됩니다."),
-           h5("나의 활동 및 성적은 [빨간색 마름모]로 표시됩니다.")
+           p("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다."),
+           p("나의 활동 및 성적을 지난학기 수강생들의 활동 및 성적, 또는 이번학기 수강생들의 활동 및 성적과 비교해 볼 수 있습니다. "),
+           p("특정한 수강생의 활동 및 성적을 클릭하거나, 성적 비교집단을 클릭하여 나의 활동 및 성적과 비교해보기 바랍니다."),
+           p("특정한 주차에 대해 자세한 정보를 얻고자 할 경우, 하단의 슬라이더를 이동해 보십시오."),
+           p("15주차 전체의 정보를 얻고자 할 경우, 슬라이더 우측의 '요약보기'를 클릭하면 됩니다."),
+          p("나의 활동 및 성적은", span(strong("[빨간색 마름모(◆)]"), style = "color:red"), "로 표시됩니다.")
            
   )),
   
@@ -180,7 +181,8 @@ shinyUI(fixedPage(
       # br(),
       uiOutput(outputId = "Pop_Up_Description"),
       uiOutput(outputId = "Pop_Up_SelectInput"),
-      uiOutput(outputId = "Pop_Up_Plot")
+      uiOutput(outputId = "Pop_Up_Plot"),
+      tags$head(tags$style("#Description .modal-footer{ display:none}"))
     )
   )       
 ))

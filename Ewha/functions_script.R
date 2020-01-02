@@ -282,21 +282,12 @@ legend_disable_js = "function(el, x){
 click_event_js = "
 function(el, x){
     el.on('plotly_click', function(data) {
-        // Click Event를 적용할 Plot의 수를 지정
-        // --> Scatter Plot의 개수
         var plot_len = document.getElementsByClassName('scatterlayer').length
-
-        // Pop-Up 창이 활성화 된 이후에는 전체 Plot의 수가 4개가 추가되므로 이를 제거 
-        //   지난 학기 : 10개 Plot
-        //   현재 학기 : 9개 Plot 
         if(plot_len > 6){
             plot_len = plot_len - 4
         }
-        
-        // Click한 Point가 있는 Plot의 Curve 개수
+
         var clicked_plot_curve_len = el.getElementsByClassName('scatter').length;
-        
-        // 적용할 Plot의 개수에 맞춰 Point, div 등의 Array 생성
         var point_arr = new Array(plot_len);
         var old_point_arr = new Array(plot_len);
         var plotly_div_arr = new Array(plot_len);
@@ -309,20 +300,16 @@ function(el, x){
         console.log('data: ', String(data));
         console.log('curve_num: ', String(curve_num));
         console.log('point_num: ', String(point_num));
-        
-        // Click한 Point가 있는 Plot의 Curve 개수의 절반의 올림값보다, 값이 크게 나오는 경우는 Subplot의 2번째 Plot을 클릭한 경우 이므로,
-        // curve_num을 그만큼 줄여 조정해준다.
+
         if(curve_num >= Math.ceil(clicked_plot_curve_len / 2)){
             curve_num = curve_num - Math.ceil(clicked_plot_curve_len / 2);
         }
         
-        //나의 점수는 확대가 되지 않도록 설정
-        // 길이가 1인(나의 점수는 1개의 점이므로) 점을 클릭한 경우 함수를 종료
-        if(document.getElementsByClassName('scatter')[curve_num].getElementsByClassName('point').length == 0){
+        if(document.getElementsByClassName('scatter')[curve_num].getElementsByClassName('point').length == 1){
             return;
         }
           
-        console.log('curve_num: ', String(curve_num));
+          console.log('curve_num: ', String(curve_num));
         
         for(i=0; i<plot_len; i++) {
             if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
@@ -338,13 +325,15 @@ function(el, x){
                 continue;
             }
             if (plotly_div_arr[i].backup !== undefined) {
-                console.log('plotly_div_arr[', i, '].backup curveNumber : ', plotly_div_arr[i].backup.curveNumber);
-                console.log('plotly_div_arr[', i, '].backup point_num : ', plotly_div_arr[i].backup.pointNumber);    
+                if ( plotly_div_arr[i].backup.curveNumber < document.getElementsByClassName('scatterlayer')[0].getElementsByClassName('scatter').length){
+                    console.log('plotly_div_arr[', i, '].backup curveNumber : ', plotly_div_arr[i].backup.curveNumber);
+                    console.log('plotly_div_arr[', i, '].backup point_num : ', plotly_div_arr[i].backup.pointNumber);    
 
-                old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
-                if (old_point_arr[0] !== undefined) {
-                    old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
-                } 
+                    old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
+                    if (old_point_arr[0] !== undefined) {
+                        old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
+                    } 
+                }
             } 
         }
         

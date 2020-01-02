@@ -10,7 +10,7 @@
 # options(encoding = "UTF-8")
 
 # 0. Packages ----------------------------------------------
-required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets")
+required_packages = c("readxl", "data.table", "plotly", "ggplot2", "shiny", "htmlwidgets", "shinyBS", "shinyjs")
 
 # 설치되어 있지 않으면 해당 패키지를 설치한다.
 for(pkg in required_packages){
@@ -28,14 +28,14 @@ library(shiny)
 library(htmlwidgets)
 library(showtext)
 library(shinyBS)
-
+library(shinyjs)
 
 
 
 # 1. 경로 설정 ----------------------------------------------
 # 데이터 및 functions_script 경로 지정
-# base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
-base_path = "."
+base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
+# base_path = "."
 source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
 
 
@@ -51,7 +51,7 @@ showtext_opts(dpi = 112)
 
 # 3. 데이터 Loading ----------------------------------------------
 # Set My Data(x11, x34, x43)
-my_data = "x11"
+my_data = "x34"
 jitter_value = 0
 
 # Load Data
@@ -116,18 +116,18 @@ long_this_year_team[,"성적등급" := "NA"]
 
 # 4.1.3. Group by Weekly Data ----------------------------------------------
 #전체 학습자
-long_this_weekly_score[, `Q&A 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 댓글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`팀플 게시글 수`), by = list(week)]
-long_this_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`Q&A 댓글 수`), by = list(week)]
+long_this_weekly_score[, `Q&A 게시글 수 평균 전체` := round(mean(`Q&A 게시글 수`),1), by = list(week)]
+long_this_weekly_score[, `Q&A 댓글 수 평균 전체` := round(mean(`Q&A 댓글 수`),1), by = list(week)]
+long_this_weekly_score[, `팀플 게시글 수 평균 전체` := round(mean(`팀플 게시글 수`),1), by = list(week)]
+long_this_weekly_score[, `팀플 댓글 수 평균 전체` := round(mean(`Q&A 댓글 수`),1), by = list(week)]
 
 # 나와 유사한 학습자
 my_score = this_test_score[수강생 == my_data, 중간점수]
 similar_student = this_test_score[중간점수 >= (my_score - (100 * 0.05)) & 중간점수 <= (my_score + (100 * 0.05)), 수강생]
-long_this_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 댓글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`팀플 게시글 수`), by = list(week)]
-long_this_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`팀플 댓글 수`), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := round(mean(`Q&A 게시글 수`),1), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := round(mean(`Q&A 댓글 수`),1), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := round(mean(`팀플 게시글 수`),1), by = list(week)]
+long_this_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := round(mean(`팀플 댓글 수`),1), by = list(week)]
 # 최고점 학습자
 long_this_weekly_score[, `Q&A 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
 long_this_weekly_score[, `Q&A 댓글 수 평균 최고` := max(`Q&A 댓글 수`), by = list(week)]
@@ -183,24 +183,24 @@ max_count = max(c(long_last_year_qna[,count], long_last_year_team[,count], long_
 
 # 4.2.3. Group by Weekly Data ----------------------------------------------
 # 성적 그룹별
-long_last_weekly_score[, `Q&A 게시글 수 평균 그룹별` := mean(`Q&A 게시글 수`), by = list(성적등급, week)]
-long_last_weekly_score[, `Q&A 댓글 수 평균 그룹별` := mean(`Q&A 댓글 수`), by = list(성적등급, week)]
-long_last_weekly_score[, `팀플 게시글 수 평균 그룹별` := mean(`팀플 게시글 수`), by = list(성적등급, week)]
-long_last_weekly_score[, `팀플 댓글 수 평균 그룹별` := mean(`팀플 댓글 수`), by = list(성적등급, week)]
+long_last_weekly_score[, `Q&A 게시글 수 평균 그룹별` := round(mean(`Q&A 게시글 수`),1), by = list(성적등급, week)]
+long_last_weekly_score[, `Q&A 댓글 수 평균 그룹별` := round(mean(`Q&A 댓글 수`),1), by = list(성적등급, week)]
+long_last_weekly_score[, `팀플 게시글 수 평균 그룹별` := round(mean(`팀플 게시글 수`),1), by = list(성적등급, week)]
+long_last_weekly_score[, `팀플 댓글 수 평균 그룹별` := round(mean(`팀플 댓글 수`),1), by = list(성적등급, week)]
 
 # 전체 학습자
-long_last_weekly_score[, `Q&A 게시글 수 평균 전체` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[, `Q&A 댓글 수 평균 전체` := mean(`Q&A 댓글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 게시글 수 평균 전체` := mean(`팀플 게시글 수`), by = list(week)]
-long_last_weekly_score[, `팀플 댓글 수 평균 전체` := mean(`팀플 댓글 수`), by = list(week)]
+long_last_weekly_score[, `Q&A 게시글 수 평균 전체` := round(mean(`Q&A 게시글 수`),1), by = list(week)]
+long_last_weekly_score[, `Q&A 댓글 수 평균 전체` := round(mean(`Q&A 댓글 수`),1), by = list(week)]
+long_last_weekly_score[, `팀플 게시글 수 평균 전체` := round(mean(`팀플 게시글 수`),1), by = list(week)]
+long_last_weekly_score[, `팀플 댓글 수 평균 전체` := round(mean(`팀플 댓글 수`),1), by = list(week)]
 
 # 나와 유사한 학습자
 my_score = this_test_score[수강생 == my_data, 중간점수]
 similar_student = last_test_score[중간점수 >= (my_score - (100 * 0.05)) & 중간점수 <= (my_score + (100 * 0.05)), 수강생]
-long_last_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := mean(`Q&A 게시글 수`), by = list(week)]
-long_last_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := mean(`Q&A 댓글 수`), by = list(week)]
-long_last_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := mean(`팀플 게시글 수`), by = list(week)]
-long_last_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := mean(`팀플 댓글 수`), by = list(week)]
+long_last_weekly_score[수강생 %in% similar_student, `Q&A 게시글 수 평균 유사` := round(mean(`Q&A 게시글 수`),1), by = list(week)]
+long_last_weekly_score[수강생 %in% similar_student, `Q&A 댓글 수 평균 유사` := round(mean(`Q&A 댓글 수`),1), by = list(week)]
+long_last_weekly_score[수강생 %in% similar_student, `팀플 게시글 수 평균 유사` := round(mean(`팀플 게시글 수`),1), by = list(week)]
+long_last_weekly_score[수강생 %in% similar_student, `팀플 댓글 수 평균 유사` := round(mean(`팀플 댓글 수`),1), by = list(week)]
 
 # 최고점 학습자
 long_last_weekly_score[, `Q&A 게시글 수 평균 최고` := max(`Q&A 게시글 수`), by = list(week)]
@@ -241,7 +241,7 @@ shinyServer(function(input, output) {
     
     test_score_data = test_score_data[type == "중간점수",]  
     score_mean = ifelse(is.nan(round(mean(test_score_data$score),2))," ", round(mean(test_score_data$score),2))
-    score_sd = ifelse(is.na(round(sd(test_score_data$score),2))," ", round(mean(test_score_data$score),2))
+    score_sd = ifelse(is.na(round(sd(test_score_data$score),2))," ", round(sd(test_score_data$score),2))
     
     cat(paste0("<중간점수> \n",
                "평균: ", score_mean, "점\n", 
@@ -258,7 +258,7 @@ shinyServer(function(input, output) {
     
     test_score_data = test_score_data[type == "기말점수",]
     score_mean = ifelse(is.nan(round(mean(test_score_data$score),2)),"", round(mean(test_score_data$score),2))
-    score_sd = ifelse(is.na(round(sd(test_score_data$score),2)),"", round(mean(test_score_data$score),2))
+    score_sd = ifelse(is.na(round(sd(test_score_data$score),2)),"", round(sd(test_score_data$score),2))
     
     cat(paste0("<기말점수> \n",
                "평균: ", score_mean, "점\n", 
@@ -276,7 +276,7 @@ shinyServer(function(input, output) {
     
     online_qna_data = online_qna_data[week %in% as.numeric(input$Select_Week) & type == "Q&A 게시글 수",]
     count_mean = ifelse(is.nan(round(mean(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
-    count_sd = ifelse(is.na(round(sd(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
+    count_sd = ifelse(is.na(round(sd(online_qna_data$count),2)),"", round(sd(online_qna_data$count),2))
     
     cat(paste0("<Q&A 게시글 수> \n",
                "평균: ", count_mean, "개\n", 
@@ -293,7 +293,7 @@ shinyServer(function(input, output) {
     
     online_qna_data = online_qna_data[week %in% as.numeric(input$Select_Week) & type == "Q&A 댓글 수",]
     count_mean = ifelse(is.nan(round(mean(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
-    count_sd = ifelse(is.na(round(sd(online_qna_data$count),2)),"", round(mean(online_qna_data$count),2))
+    count_sd = ifelse(is.na(round(sd(online_qna_data$count),2)),"", round(sd(online_qna_data$count),2))
     
     cat(paste0("<Q&A 댓글 수> \n",
                "평균: ", count_mean, "개\n", 
@@ -311,7 +311,7 @@ shinyServer(function(input, output) {
     
     online_team_data = online_team_data[week %in% as.numeric(input$Select_Week) & type == "팀플 게시글 수",]
     count_mean = ifelse(is.nan(round(mean(online_team_data$count),2)),"", round(mean(online_team_data$count),2))
-    count_sd = ifelse(is.na(round(sd(online_team_data$count),2)),"", round(mean(online_team_data$count),2))
+    count_sd = ifelse(is.na(round(sd(online_team_data$count),2)),"", round(sd(online_team_data$count),2))
     
     cat(paste0("<팀플 게시글 수> \n",
                "평균: ", count_mean, "개\n", 
@@ -329,7 +329,7 @@ shinyServer(function(input, output) {
     online_team_data = online_team_data[week %in% as.numeric(input$Select_Week) & type == "팀플 댓글 수",]
     
     count_mean = ifelse(is.nan(round(mean(online_team_data$count),2)),"", round(mean(online_team_data$count),2))
-    count_sd = ifelse(is.na(round(sd(online_team_data$count),2)),"", round(mean(online_team_data$count),2))    
+    count_sd = ifelse(is.na(round(sd(online_team_data$count),2)),"", round(sd(online_team_data$count),2))    
     
     cat(paste0("<팀플 댓글 수> \n",
                "평균: ", count_mean, "개\n", 
@@ -528,7 +528,9 @@ shinyServer(function(input, output) {
     
     ggplotly(g)%>% 
       config(displayModeBar = F) %>%
-        layout(showlegend = TRUE, legend = list(orientation = "h", y = 1.4)) %>%
+        layout(showlegend = TRUE, 
+               legend = list(orientation = "h", y = 1.4),
+               yaxis = list(hoverformat = ".1f")) %>%
       onRender(legend_disable_js)
   })
   
