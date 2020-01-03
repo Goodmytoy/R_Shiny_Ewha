@@ -219,6 +219,32 @@ long_last_weekly_score[, `팀플 댓글 수 평균 최저` := min(`팀플 댓글
 
 # 5. Shiny Server ----------------------------------------------
 shinyServer(function(input, output) {
+  
+  # shinyjs::runjs(HTML("
+  #   var plot_len = document.getElementsByClassName('scatterlayer').length
+  #   
+  #   if(plot_len > 6){
+  #       plot_len = plot_len - 4
+  #   }
+  #     var checkboxes = document.getElementsByName('Grade_Compare_Group')
+  #   var chk = false
+  #   var color_arr = new Array(checkboxes.length); 
+  #   color_arr[0] = 'rgb(102,176,226)'
+  #   color_arr[1] = 'rgb(255,189,55)'
+  #   color_arr[2] = 'rgb(127,108,171)'
+  #   color_arr[3] = 'rgb(158,200,110)'
+  #   
+  #   console.log('checkbox length : ', String(checkboxes.length))
+  #   
+  #   for(i=0; i<checkboxes.length; i++){
+  #   
+  #       if(checkboxes[i].checked){
+  #           for(j=0; j<plot_len; j++) {
+  #               document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('scatter')[i].getElementsByClassName('point')[0].style['fill'] = color_arr[i]
+  #           }
+  #       }
+  #   }
+  #                "))
   # 5.1 Main Page ----------------------------------------------
   # 5.0 Mydata Image
   output$My_Data_Img = renderImage({
@@ -339,8 +365,8 @@ shinyServer(function(input, output) {
   
   # 5.1.2. Strip Plot ----------------------------------------------
   output$Test_Score_Plot = renderPlotly({
-    pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
-    
+    # pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
+    pal = rep(rgb_gray , 4)
     if(input$Mode == "지난 학기 수강생"){
       test_score_data = long_last_test_score
     }else if(input$Mode == "현재 학기 수강생"){
@@ -368,7 +394,8 @@ shinyServer(function(input, output) {
   
   
   output$Online_QNA_Plot = renderPlotly({
-    pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
+    # pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
+    pal = rep(rgb_gray , 4)
     select_week = as.numeric(input$Select_Week)
     # select_week = 10
     if(input$Mode == "지난 학기 수강생"){
@@ -399,7 +426,8 @@ shinyServer(function(input, output) {
   
   
   output$Online_Team_Plot = renderPlotly({
-    pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
+    # pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
+    pal = rep(rgb_gray , 4)
     select_week = as.numeric(input$Select_Week)
     
     if(input$Mode == "지난 학기 수강생"){
@@ -428,7 +456,68 @@ shinyServer(function(input, output) {
     team_plot %>% 
       config(displayModeBar = F) %>%
       onRender(click_event_js)  
+    
+    
   })
+  
+  
+  #
+  observe({
+    if('A' %in% input$Grade_Compare_Group){
+      shinyjs::runjs(fn_change_color_js("rgb(102,176,226)", 0))
+    } else if(!'A' %in% input$Grade_Compare_Group) {
+      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 0))
+    }
+
+    if('B' %in% input$Grade_Compare_Group){
+      shinyjs::runjs(fn_change_color_js("rgb(255,189,55)", 1))
+    } else if(!'B' %in% input$Grade_Compare_Group) {
+      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 1))
+    }
+
+    if('C' %in% input$Grade_Compare_Group){
+      shinyjs::runjs(fn_change_color_js("rgb(127,108,171)", 2))
+    } else if(!'C' %in% input$Grade_Compare_Group) {
+      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 2))
+    }
+
+    if('D' %in% input$Grade_Compare_Group){
+      shinyjs::runjs(fn_change_color_js("rgb(158,200,110)", 3))
+    } else if(!'D' %in% input$Grade_Compare_Group) {
+      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 3))
+    }
+  })
+  # 
+  # # 
+  # observeEvent(
+  #   input$Select_Week, {
+  #     if(input$Mode == "지난 학기 수강생"){
+  #       if('A' %in% input$Grade_Compare_Group){
+  #         shinyjs::runjs(fn_change_color_js("rgb(102,176,226)", 0))
+  #       } else if(!'A' %in% input$Grade_Compare_Group) {
+  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 0))
+  #       }
+  #       
+  #       if('B' %in% input$Grade_Compare_Group){
+  #         shinyjs::runjs(fn_change_color_js("rgb(255,189,55)", 1))
+  #       } else if(!'B' %in% input$Grade_Compare_Group) {
+  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 1))
+  #       }
+  #       
+  #       if('C' %in% input$Grade_Compare_Group){
+  #         shinyjs::runjs(fn_change_color_js("rgb(127,108,171)", 2))
+  #       } else if(!'C' %in% input$Grade_Compare_Group) {
+  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 2))
+  #       }
+  #       
+  #       if('D' %in% input$Grade_Compare_Group){
+  #         shinyjs::runjs(fn_change_color_js("rgb(158,200,110)", 3))
+  #       } else if(!'D' %in% input$Grade_Compare_Group) {
+  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 3))
+  #       }
+  #     }
+  #   }
+  # )
   
   
   # 5.1.3. Slider Input UI ----------------------------------------------
@@ -453,6 +542,7 @@ shinyServer(function(input, output) {
     )
   })
   
+  # 5.1.4. Checkbox Input UI ----------------------------------------------
   output$group_checkbox_input = renderUI({
     if(input$Mode == "지난 학기 수강생"){
       fixedRow(

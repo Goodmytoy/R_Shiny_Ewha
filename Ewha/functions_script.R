@@ -24,6 +24,24 @@ rgb_red = rgb(255, 0, 0, maxColorValue = 255)
 
 
 # 3. Functions ----------------------------------------------
+fn_change_color_js = function(rgb_col, curve){
+  js_code = sprintf("
+      var curve_num = %d
+      for(j=0; j<6; j++) {
+        if(document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('point').length == 0){
+            continue;
+        }
+        for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point').length;pnt++){
+          document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[pnt].style['fill'] = '%s'
+          document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[pnt].style['stroke'] = '%s'
+        }
+        
+      }", curve, rgb_col, rgb_col)
+  
+  return(js_code)
+}
+
+
 fn_change_color = function(choices, type = "지난 학기 수강생"){
   # Description:
   #   Plotting을 위한 Pallete vector를 만드는 함수
