@@ -265,7 +265,7 @@ fn_draw_strip_plot = function(data,
     
     
     # my_data가 NA가 아닌 경우에 빨간색으로 나의 점수를 표시
-    if(is.na(my_data) == FALSE){
+    if((is.na(my_data) == FALSE)){
       # 해당 type이 데이터에 존재할 때만 표시
       if(type_vec[i] %in% this_data[,type]){
         plot_list[[i]] = plot_list[[i]] + geom_point(data = this_data[type == type_vec[i] & 수강생 == my_data,], 
@@ -307,8 +307,6 @@ function(el, x){
 
         var clicked_plot_curve_len = el.getElementsByClassName('scatter').length;
         var point_arr = new Array(plot_len);
-        var old_point_arr = new Array(plot_len);
-        var plotly_div_arr = new Array(plot_len);
         var curve_num_arr = new Array(plot_len);
         
         var old_curve_num = data.points[0].curveNumber;
@@ -337,40 +335,33 @@ function(el, x){
             }
             console.log('curve_num: ', String(curve_num));
             point_arr[i] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[point_num];
-            plotly_div_arr[i] =  document.getElementsByClassName('plotly')[i];
+            //plotly_div_arr[i] =  document.getElementsByClassName('plotly')[i];
         }
         
         for(i=0; i<plot_len; i++) {
             if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
                 continue;
             }
-            for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length; pnt++){
-              temp_point = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point')[pnt]
-              
-              if(temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z'){
-                temp_point.setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z')
-              }
-            }
-        }
-        
-        for(i=0; i<plot_len; i++) {
-            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
+            if(point_arr[i].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
+                point_arr[i].setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z');
                 continue;
+            } else {
+                for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length; pnt++){
+                    temp_point = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point')[pnt];
+                    if(temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z'){
+                        temp_point.setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z')
+                    }
+                }
+                
+                if(point_arr[i].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
+                    point_arr[i].setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z');
+                } else if (point_arr[i].attributes['d'].value == 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z'){
+                    point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
+                }
             }
-            plotly_div_arr[i].backup = {curveNumber: curve_num,
-                                        pointNumber: point_num,
-                                        d: point_arr[i].attributes['d'].value,
-                                        style: point_arr[i].attributes['style'].value
-                                        };
-        }
-        for(i=0; i<plot_len; i++) {
-            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
-                continue;
-            }
-            point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
         }
     });
-    }
+ }
 "
 
 
@@ -440,11 +431,9 @@ function(el, x){
 "
 
 cursor_disable_js = "
-  function(el, x) {
-    console.log('cursor ' , String(getElementsByClassName('cursor-crosshair').length));
-    for(i=0; i<getElementsByClassName('cursor-crosshair').length; i++){
-      document.getElementsByClassName('cursor-crosshair')[i].style['cursor'] = 'default';
-    }
+  console.log('cursor default');
+  for(i=0; i<3; i++){
+    document.getElementsByClassName('cursor-crosshair')[i].style['cursor'] = 'default';
   }
 "
 

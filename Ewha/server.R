@@ -389,21 +389,8 @@ shinyServer(function(input, output) {
       config(displayModeBar = F) %>%
       onRender(click_event_js) %>%
       onRender(click_event_maintain_js) %>%
-    onRender(color_change_js)
-    # 
-    # if(input$Mode == "지난 학기 수강생"){
-    #   test_plot %>% layout(autosize = T) %>%
-    #     config(displayModeBar = F) %>%
-    #       onRender(click_event_js) %>%
-    #         onRender(click_event_maintain_js)
-              # onRender(color_change_js)
-    # } else {
-    #   test_plot %>% layout(autosize = T) %>%
-    #     config(displayModeBar = F) %>%
-    #       onRender(click_event_js) %>%
-    #         onRender(click_event_maintain_js)
-    # }
-
+      onRender(color_change_js)
+    
   })
   
   
@@ -434,24 +421,11 @@ shinyServer(function(input, output) {
                                   y_max = max_count,
                                   jitter = jitter_value)
     
-      qna_plot %>% layout(autosize = T) %>%
-        config(displayModeBar = F) %>%
-        onRender(click_event_js) %>%
-        onRender(click_event_maintain_js)  %>%
-    onRender(color_change_js)
-      
-    # if(input$Mode == "지난 학기 수강생"){
-    #   qna_plot %>% layout(autosize = T) %>%
-    #     config(displayModeBar = F) %>%
-    #     onRender(click_event_js) %>%
-    #     onRender(click_event_maintain_js)
-    #     onRender(color_change_js)
-    # } else {
-    #   qna_plot %>% layout(autosize = T) %>%
-    #     config(displayModeBar = F) %>%
-    #     onRender(click_event_js) %>%
-    #     onRender(click_event_maintain_js)
-    # }
+    qna_plot %>% layout(autosize = T) %>%
+      config(displayModeBar = F) %>%
+      onRender(click_event_js) %>%
+      onRender(click_event_maintain_js)  %>%
+      onRender(color_change_js)
     
   })
   
@@ -488,23 +462,13 @@ shinyServer(function(input, output) {
       config(displayModeBar = F) %>%
       onRender(click_event_js) %>%
       onRender(click_event_maintain_js)  %>%
-    onRender(color_change_js)
-    
-    # if(input$Mode == "지난 학기 수강생"){
-    #   team_plot %>% layout(autosize = T) %>%
-    #     config(displayModeBar = F) %>%
-    #     onRender(click_event_js) %>%
-    #     onRender(click_event_maintain_js) %>%
-    #     onRender(color_change_js)
-    # } else {
-    #   team_plot %>% layout(autosize = T) %>%
-    #     config(displayModeBar = F) %>%
-    #     onRender(click_event_js) %>%
-    #     onRender(click_event_maintain_js)
-    # }
+      onRender(color_change_js)
     
   })
   
+  observe({
+    shinyjs::runjs(cursor_disable_js)
+  })
   
   #
   observe({
@@ -534,7 +498,7 @@ shinyServer(function(input, output) {
       }
     }
   })
-
+  
   
   
   # 5.1.3. Slider Input UI ----------------------------------------------
@@ -623,21 +587,21 @@ shinyServer(function(input, output) {
     }
     
     g = fn_draw_line_plot(data = weekly_score, 
-                         this_data = long_this_weekly_score, 
-                         y = y_val, 
-                         pal = pal,
-                         legend = TRUE,
-                         x_axis = FALSE,
-                         my_data = my_data,
-                         my_data_y = "Q&A 게시글 수",
-                         browser = F)
+                          this_data = long_this_weekly_score, 
+                          y = y_val, 
+                          pal = pal,
+                          legend = TRUE,
+                          x_axis = FALSE,
+                          my_data = my_data,
+                          my_data_y = "Q&A 게시글 수",
+                          browser = F)
     
     
     ggplotly(g)%>% 
       config(displayModeBar = F) %>%
-        layout(showlegend = TRUE, 
-               legend = list(orientation = "h", y = 1.4),
-               yaxis = list(hoverformat = ".1f")) %>%
+      layout(showlegend = TRUE, 
+             legend = list(orientation = "h", y = 1.4),
+             yaxis = list(hoverformat = ".1f")) %>%
       onRender(legend_disable_js)
   })
   
@@ -669,14 +633,14 @@ shinyServer(function(input, output) {
     }
     
     g = fn_draw_line_plot(data = weekly_score, 
-                         this_data = long_this_weekly_score, 
-                         y = y_val, 
-                         pal = pal,
-                         legend = FALSE,
-                         x_axis = FALSE,
-                         my_data = my_data,
-                         my_data_y = "Q&A 댓글 수",
-                         browser = F)
+                          this_data = long_this_weekly_score, 
+                          y = y_val, 
+                          pal = pal,
+                          legend = FALSE,
+                          x_axis = FALSE,
+                          my_data = my_data,
+                          my_data_y = "Q&A 댓글 수",
+                          browser = F)
     
     ggplotly(g)%>% 
       config(displayModeBar = F)
@@ -710,13 +674,13 @@ shinyServer(function(input, output) {
     }
     
     g = fn_draw_line_plot(data = weekly_score, 
-                         this_data = long_this_weekly_score, 
-                         y = y_val, 
-                         pal = pal,
-                         legend = FALSE,
-                         x_axis = FALSE,
-                         my_data = my_data,
-                         my_data_y = "팀플 게시글 수")
+                          this_data = long_this_weekly_score, 
+                          y = y_val, 
+                          pal = pal,
+                          legend = FALSE,
+                          x_axis = FALSE,
+                          my_data = my_data,
+                          my_data_y = "팀플 게시글 수")
     
     ggplotly(g)%>% 
       config(displayModeBar = F)
@@ -750,13 +714,13 @@ shinyServer(function(input, output) {
     }
     
     g = fn_draw_line_plot(data = weekly_score, 
-                         this_data = long_this_weekly_score, 
-                         y = y_val, 
-                         pal = pal,
-                         legend = FALSE,
-                         x_axis = TRUE,
-                         my_data = my_data,
-                         my_data_y = "팀플 댓글 수")
+                          this_data = long_this_weekly_score, 
+                          y = y_val, 
+                          pal = pal,
+                          legend = FALSE,
+                          x_axis = TRUE,
+                          my_data = my_data,
+                          my_data_y = "팀플 댓글 수")
     
     ggplotly(g)%>% 
       config(displayModeBar = F)
