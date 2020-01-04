@@ -51,7 +51,7 @@ showtext_opts(dpi = 112)
 
 # 3. 데이터 Loading ----------------------------------------------
 # Set My Data(x11, x34, x43)
-my_data = "x25"
+my_data = "x11"
 jitter_value = 0
 
 # Load Data
@@ -64,11 +64,11 @@ this_weekly_score = as.data.table(read_excel(paste0(base_path,"/data/data.xlsx")
 
 # 데이터의 순서를 맞춰준다.
 # 추후, Plotly click event 발생 시 point_number가 동일하게 지정될 수 있도록
-last_test_score[order(수강생)]
-last_weekly_score[order(수강생)]
-last_total_score[order(수강생)]
-this_test_score[order(수강생)]
-this_weekly_score[order(수강생)]
+last_test_score = last_test_score[order(수강생)]
+last_weekly_score = last_weekly_score[order(수강생)]
+last_total_score = last_total_score[order(수강생)]
+this_test_score = this_test_score[order(수강생)]
+this_weekly_score = this_weekly_score[order(수강생)]
 
 
 
@@ -215,36 +215,15 @@ long_last_weekly_score[, `팀플 게시글 수 평균 최저` := min(`팀플 게
 long_last_weekly_score[, `팀플 댓글 수 평균 최저` := min(`팀플 댓글 수`), by = list(week)]
 
 
+# 성적등급에 순서를 지정하기 위해 Factor로 지정한다.
+long_this_test_score$`성적등급` = factor(long_this_test_score$`성적등급`, levels = c("A", "B", "C", "D"))
+long_last_test_score$`성적등급` = factor(long_last_test_score$`성적등급`, levels = c("A", "B", "C", "D"))
+long_this_weekly_score$`성적등급` = factor(long_this_weekly_score$`성적등급`, levels = c("A", "B", "C", "D"))
+long_last_weekly_score$`성적등급` = factor(long_last_weekly_score$`성적등급`, levels = c("A", "B", "C", "D"))
 
 
 # 5. Shiny Server ----------------------------------------------
 shinyServer(function(input, output) {
-  
-  # shinyjs::runjs(HTML("
-  #   var plot_len = document.getElementsByClassName('scatterlayer').length
-  #   
-  #   if(plot_len > 6){
-  #       plot_len = plot_len - 4
-  #   }
-  #     var checkboxes = document.getElementsByName('Grade_Compare_Group')
-  #   var chk = false
-  #   var color_arr = new Array(checkboxes.length); 
-  #   color_arr[0] = 'rgb(102,176,226)'
-  #   color_arr[1] = 'rgb(255,189,55)'
-  #   color_arr[2] = 'rgb(127,108,171)'
-  #   color_arr[3] = 'rgb(158,200,110)'
-  #   
-  #   console.log('checkbox length : ', String(checkboxes.length))
-  #   
-  #   for(i=0; i<checkboxes.length; i++){
-  #   
-  #       if(checkboxes[i].checked){
-  #           for(j=0; j<plot_len; j++) {
-  #               document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('scatter')[i].getElementsByClassName('point')[0].style['fill'] = color_arr[i]
-  #           }
-  #       }
-  #   }
-  #                "))
   # 5.1 Main Page ----------------------------------------------
   # 5.0 Mydata Image
   output$My_Data_Img = renderImage({
@@ -372,9 +351,11 @@ shinyServer(function(input, output) {
     }else if(input$Mode == "현재 학기 수강생"){
       test_score_data = long_this_test_score
       test_score_data = test_score_data[수강생 != my_data,]
+      # 현재 학기 수강생의 경우, 기말점수가 존재하지 않기 떄문에 1번쨰 사람의 데이터를 복사해서, [type = 기말점수, score = NA] 인 임시데이터 생성
       test_score_data = rbind(test_score_data, test_score_data[1,][,`:=` (type = "기말점수", score = NA)])
     }
     
+    # jitter를 사용하는 경우 seed를 사용하여 항상 동일한 jitter를 적용
     set.seed(100)
     test_plot = fn_draw_strip_plot(data = test_score_data,
                                    this_data = long_this_test_score,
@@ -406,12 +387,16 @@ shinyServer(function(input, output) {
       online_qna_data = long_this_year_qna
       online_qna_data = online_qna_data[수강생 != my_data,]
     }
-    set.seed(100)
+
+    # Slider Input에 따라 해당 주차의 데이터만 추출
     input_data = online_qna_data[week %in% select_week]
+    # 데이터가 존재하지 않는 주차는 1주차의 데이터를 복사해서 slider input에 해당하는 주로 week을 변경하고, count를 NA로 대체하여 임시 데이터 생성
     if(nrow(online_qna_data[week %in% select_week]) == 0){
       input_data = online_qna_data[week %in% 1][, `:=` (week = rep(select_week, nrow(online_qna_data[week %in% 1])), count = NA)]
     }
-    
+
+    # jitter를 사용하는 경우 seed를 사용하여 항상 동일한 jitter를 적용
+    set.seed(100)
     qna_plot = fn_draw_strip_plot(data = input_data,
                                   this_data = long_this_year_qna[week %in% select_week],
                                   y = "count",
@@ -432,6 +417,7 @@ shinyServer(function(input, output) {
   
   output$Online_Team_Plot = renderPlotly({
     # pal = fn_change_color(input$Grade_Compare_Group, type = input$Mode)
+    # 기본 색상은 Gray로 지정 (반응에 따라 Javascript로 색상을 얹는 방식으로 구현)
     pal = rep(rgb_gray , 4)
     select_week = as.numeric(input$Select_Week)
     
@@ -442,12 +428,15 @@ shinyServer(function(input, output) {
       online_team_data = online_team_data[수강생 != my_data,]
     }
     
-    set.seed(100)
+    # Slider Input에 따라 해당 주차의 데이터만 추출
     input_data = online_team_data[week %in% select_week]
+    # 데이터가 존재하지 않는 주차는 1주차의 데이터를 복사해서 slider input에 해당하는 주로 week을 변경하고, count를 NA로 대체하여 임시 데이터 생성
     if(nrow(online_team_data[week %in% select_week]) == 0){
       input_data = online_team_data[week %in% 1][, `:=` (week = rep(select_week, nrow(online_team_data[week %in% 1])), count = NA)]
     }
     
+    # jitter를 사용하는 경우 seed를 사용하여 항상 동일한 jitter를 적용
+    set.seed(100)
     team_plot = fn_draw_strip_plot(data = input_data,
                                    this_data = long_this_year_team[week %in% select_week],
                                    y = "count",
@@ -470,7 +459,9 @@ shinyServer(function(input, output) {
     shinyjs::runjs(cursor_disable_js)
   })
   
-  #
+  # 5.1.3. Change Color by Checkboxgroup input ----------------------------------------------
+  # 그룹 선택에 따라서 plot의 그룹 색을 지정한다.
+  # javascript 코드를 string으로 생성하는 fn_change_color_js 함수를 이용하여 적용
   observe({
     if(input$Mode == "지난 학기 수강생"){
       if('A' %in% input$Grade_Compare_Group){
@@ -501,7 +492,7 @@ shinyServer(function(input, output) {
   
   
   
-  # 5.1.3. Slider Input UI ----------------------------------------------
+  # 5.1.4. Slider Input UI ----------------------------------------------
   output$max_week_slider_input = renderUI({
     if(input$Mode == "지난 학기 수강생"){
       max_week = max(as.numeric(long_last_year_qna$week))
@@ -523,7 +514,7 @@ shinyServer(function(input, output) {
     )
   })
   
-  # 5.1.4. Checkbox Input UI ----------------------------------------------
+  # 5.1.5. Checkbox Input UI ----------------------------------------------
   output$group_checkbox_input = renderUI({
     if(input$Mode == "지난 학기 수강생"){
       fixedRow(

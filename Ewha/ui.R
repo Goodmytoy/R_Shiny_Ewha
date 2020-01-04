@@ -25,11 +25,13 @@ showtext_opts(dpi = 112)
 
 # 2. Shiny UI ----------------------------------------------
 shinyUI(fixedPage(
+  # Javascript 코드를 실행하여 UI에 적용한다.
   shinyjs::useShinyjs(),
-  # Application title
+
+  # 2.1 Application title ----------------------------------------------
   titlePanel(h1(p(strong("Find me Find you")), align = "center")),
   
-  # Description
+  # 2.2 Description ----------------------------------------------
   fixedRow(column(width = 10, offset = 1,
            br(),
            p("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다."),
@@ -42,7 +44,7 @@ shinyUI(fixedPage(
   )),
   
   
-  # SelectInput (학기 선택)
+  # 2.3 SelectInput (학기 선택) ----------------------------------------------
   fixedRow(
         column(width = 1, offset = 1, align = "left",
           div(style = "display:inline-block; padding-top: 18px; margin-left: 0px;", 
@@ -62,34 +64,11 @@ shinyUI(fixedPage(
           )
         )
   ),
-  uiOutput(outputId = "group_checkbox_input"),
-  # checkboxGroupInput (성적 비교 집단 선택)
-  # fixedRow(
-  #   column(width = 2, offset = 1, align = "left",
-  #     div(style = "display:inline-block; padding-top: 12px; margin-left: 0px;", 
-  #       h4(p(strong("성적 비교 집단")))
-  #     )     
-  #   ),
-  #   column(width = 5, offset = 0, align = "left",
-  #     br(),
-  #     div(style = "display:inline-block; margin-left: 0px;",
-  #       checkboxGroupInput(
-  #         inputId = "Grade_Compare_Group", 
-  #         label = NULL,
-  #         choiceNames = list(
-  #           tags$span("A", style = "color: rgb(102,176,226); font-weight: bold; font-size: large; margin-right : 50%;"),
-  #           tags$span("B", style = "color: rgb(255,189,55); font-weight: bold; font-size: large; margin-right : 50%;"),
-  #           tags$span("C", style = "color: rgb(127,108,171); font-weight: bold; font-size: large; margin-right : 50%;"),
-  #           tags$span("D이하", style = "color: rgb(158,200,110); font-weight: bold; font-size: large; margin-right : 20px;")
-  #         ),
-  #         choiceValues = c("A", "B", "C", "D"),
-  #         inline = TRUE
-  #       )   
-  #     )
-  #   )  
-  # ),
   
-  # 시험 점수 Well Panel
+  # 2.4 group_checkbox_input (성적 그룹 선택) ----------------------------------------------
+  uiOutput(outputId = "group_checkbox_input"),
+  
+  # 2.5 시험 점수 Well Panel ----------------------------------------------
   # Plot & 평균/표준편차
   fixedRow(height = 300,
     column(width = 3, offset = 1,
@@ -106,7 +85,7 @@ shinyUI(fixedPage(
       )
     ),
     
-    # 온라인 주차별 성적 Well Panel
+    # 2.6 온라인 주차별 성적 Well Panel ----------------------------------------------
     column(width = 7, offset = 0, 
       tags$style(type = "text/css", "#Online_QNA_Post_Summary { font-size: 10.7px; }
                                      #Online_QNA_Reply_Summary { font-size: 10.7px; }
@@ -116,6 +95,7 @@ shinyUI(fixedPage(
 
       wellPanel(
         fluidRow(
+          # Online_QNA_Plot
           # Plot & 평균/표준편차
           column(width = 5, offset = 1,
             verticalLayout(
@@ -126,6 +106,7 @@ shinyUI(fixedPage(
               )
             ),
           ),
+          # Online_Team_Plot
           # Plot & 평균/표준편차
           column(width = 5,
             verticalLayout(
@@ -138,7 +119,7 @@ shinyUI(fixedPage(
           )
         ),
         
-        # SliderInput
+        # 2.7 SliderInput (주차 선택) ----------------------------------------------
         fixedRow(
           column(width = 2, align = "center",
             div(style = "display:inline-block; padding-top: 30px; margin-left : -10px",
@@ -157,7 +138,7 @@ shinyUI(fixedPage(
 
           ),
           
-          # actionButton
+          # 2.7 actionButton ( Pop Up ) ----------------------------------------------
           column(width = 1, offset = 1, align = "center",
             div(style="display:inline-block; height: 50%; width:32%; padding-top: 30px; margin-left : -150px",
                actionButton(
@@ -170,7 +151,7 @@ shinyUI(fixedPage(
       )
     )
   ),
-  # bsModal - Pop-Up
+  # 2.8 bsModal - Pop-Up ----------------------------------------------
   mainPanel(
     bsModal(
       id = "Description", 

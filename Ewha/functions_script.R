@@ -291,167 +291,197 @@ fn_draw_strip_plot = function(data,
 
 # 4. Javascript Functions ----------------------------------------------
 # legend 클릭 비활성화
-legend_disable_js = "function(el, x){
-                el.on('plotly_legendclick', function() { return false; })
-             }"
+legend_disable_js = "
+function(el, x){
+    el.on('plotly_legendclick', function() { return false; })
+}
+"
 
 # Click EVent
-# 클릭했을 때, 연계된 데이터 포인트들의 크기를 확대하기 위해서
+# 클릭했을 때, 연계된 데이터 포인트들의 크기를 확대
 click_event_js = "
 function(el, x){
     el.on('plotly_click', function(data) {
+        // 적용 대상이 되는 Strip Plot들의 개수를 담는 변수 : plot_len
         var plot_len = document.getElementsByClassName('scatterlayer').length
+        // Pop-up을 하면 Plot의 개수가 4개 추가 되므로, 최대 Plot의 개수가 6을 초과하게 되면 4를 뺴서 strip_plot들만의 개수를 추출한다.
         if(plot_len > 6){
             plot_len = plot_len - 4
         }
-
-        var clicked_plot_curve_len = el.getElementsByClassName('scatter').length;
-        var point_arr = new Array(plot_len);
-        var curve_num_arr = new Array(plot_len);
         
-        var old_curve_num = data.points[0].curveNumber;
+        // CLick한 Plot의 curve 개수
+        var clicked_plot_curve_len = el.getElementsByClassName('scatter').length;
+
+        // 변경할 point들을 담을 Array 생성
+        var point_arr = new Array(plot_len);
+        
+        // CLick한 데이터들의 curveNumber, pointNumber
         var curve_num = data.points[0].curveNumber;
         var point_num = data.points[0].pointNumber;
         
+        // 추후 임시로 사용할 변수 생성
         var temp_point = ''
         
         console.log('data: ', String(data));
         console.log('curve_num: ', String(curve_num));
         console.log('point_num: ', String(point_num));
-
+        
+        // Click한 Point가 있는 Plot의 Curve 개수의 절반의 올림값보다, 값이 크게 나오는 경우는 Subplot의 2번째 Plot을 클릭한 경우 이므로,
+        // curve_num을 그만큼 줄여 조정해준다.
         if(curve_num >= Math.ceil(clicked_plot_curve_len / 2)){
             curve_num = curve_num - Math.ceil(clicked_plot_curve_len / 2);
         }
-        
+
+        //나의 점수는 확대가 되지 않도록 설정
+        // 길이가 1인(나의 점수는 1개의 점이므로) 점을 클릭한 경우 함수를 종료
         if(document.getElementsByClassName('scatter')[curve_num].getElementsByClassName('point').length == 1){
             return;
         }
           
-          console.log('curve_num: ', String(curve_num));
+        console.log('curve_num: ', String(curve_num));
+        
+        // 크기 변경을 하는 파트 
+        // 1) Click한 point과 동일한 순서에 있는 point를 찾아서 저장 -> point_arr
+        // (추가 1) 이미 확대된 점을 클릭한 경우 다시 축소 시킨다.
+        // 2) 나의 점수를 제외하고는 전체 point를 작게 조정 (다른 점을 클릭할 떄 기존의 점을 작게 만들기 위해)
+        // 3) 1)에서 저장한 point의 크기를 확대 시킨다.
         
         for(i=0; i<plot_len; i++) {
+            // point의 개수가 0개인 Plot은 pass한다.
+            // 현재 학기 수강생의 기말고사 점수 Strip Plot
             if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
                 continue;
             }
+            
             console.log('curve_num: ', String(curve_num));
+            // 각 Plot들에서 Click한 점이 가지고 있는 curveNumber, pointNumber에 해당하는 point 값을 추출하여 point_arr에 저장
             point_arr[i] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[point_num];
-            //plotly_div_arr[i] =  document.getElementsByClassName('plotly')[i];
-        }
-        
-        for(i=0; i<plot_len; i++) {
-            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
-                continue;
-            }
+            
+
+
+            // 확대된 점: 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'
+            // 작은 점(기본): 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z'
+            // 나의점수 점(마름모): 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z'
+
+            // 이미 확대된 점을 클릭한 경우 다시 축소 시킨다.
+            // 축소하는 작업만 하고 이후의 작업들을 수행하지 않기 위해 continue를 사용
             if(point_arr[i].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
                 point_arr[i].setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z');
                 continue;
             } else {
+                // 전체 point들의 크기를 작게 조절한다.
+                // 나의 점수에 해당하는 point만을 제외하고 적용
                 for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length; pnt++){
                     temp_point = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point')[pnt];
+                    // 나의 점수 제외
                     if(temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z'){
                         temp_point.setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z')
                     }
                 }
-                
-                if(point_arr[i].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
-                    point_arr[i].setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z');
-                } else if (point_arr[i].attributes['d'].value == 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z'){
-                    point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
-                }
+                // 점을 확대 한다.
+                point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
             }
         }
     });
  }
 "
 
-
+# Plot이 재생성될 떄 checkbox의 선택에 따라 점의 색상을 변경
 color_change_js = "
 function(el, x){
     console.log('Mode : ', document.getElementById('Mode').value)
+    // 기본적으로 '지난 학기 수강생'일 때만 Group 지정을 할 수 있기 때문에 
+    // Mode 가 '지난 학기 수강생'인 경우에만 함수 실행
     if(document.getElementById('Mode').value == '지난 학기 수강생'){
-      var plot_len = document.getElementsByClassName('scatterlayer').length
-      if(plot_len > 6){
-          plot_len = plot_len - 4
-      }
+        // 적용 대상이 되는 Strip Plot들의 개수를 담는 변수 : plot_len
+        var plot_len = document.getElementsByClassName('scatterlayer').length
+        // Pop-up을 하면 Plot의 개수가 4개 추가 되므로, 최대 Plot의 개수가 6을 초과하게 되면 4를 뺴서 strip_plot들만의 개수를 추출한다.
+        if(plot_len > 6){
+            plot_len = plot_len - 4
+        }
   
-      console.log('color_change')
-    
+        console.log('color_change')
+        
+        // 성적 그룹 선택 CheckBox의 class를 선택
+        var checkboxed = document.getElementsByName('Grade_Compare_Group')
+        console.log('checkbox length: ', String(checkboxed.length))
+        
+        // color들을 저장할 배열
+        var color_arr = new Array(checkboxed.length)
 
-      var checkboxed = document.getElementsByName('Grade_Compare_Group')
-      console.log('checkbox length: ', String(checkboxed.length))
-  
-      var color_arr = new Array(checkboxed.length)
-      var scatter = ''
-      color_arr[0] = 'rgb(102,176,226)'
-      color_arr[1] = 'rgb(255,189,55)'
-      color_arr[2] = 'rgb(127,108,171)'
-      color_arr[3] = 'rgb(158,200,110)'
-      
-      for(j=0; j<plot_len; j++){
-          if(document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('point').length == 0){
-              continue;
-          }
-          scatter = document.getElementsByClassName('scatterlayer')[j]
-          
-          for(i=0; i<checkboxed.length; i++){
-          
-              console.log('checkbox[', i, ']')
-              
-              if(checkboxed[i].checked){
-                console.log('checked')
-                for(pnt=0; pnt<scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point').length;pnt++){
-                  console.log(String(scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill']))
-                  scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill'] = color_arr[i]
-                  scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['stroke'] = color_arr[i]
-                } 
-              }
-              
-              /*
-              if(checkboxed[i].checked){
-                  console.log('checked')
-                  for(pnt=0; pnt<scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point').length;pnt++){
-                      console.log(String(scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill']))
-                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill'] = color_arr[i]
-                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['stroke'] = color_arr[i]
-                  }     
-              } else {
-                  for(pnt=0; pnt<scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point').length;pnt++){
-                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill'] = 'rgb(192,192,192)'
-                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['stroke'] = 'rgb(192,192,192)'
-                  }   
-              }
-              */
-          
-          }
-          
-      }
-      
-   }
+        color_arr[0] = 'rgb(102,176,226)'
+        color_arr[1] = 'rgb(255,189,55)'
+        color_arr[2] = 'rgb(127,108,171)'
+        color_arr[3] = 'rgb(158,200,110)'
+        
+        
+
+        // 색상을 변경을 하는 파트 
+        for(plt=0; plt<plot_len; plt++){
+            // point의 개수가 0개인 Plot은 pass한다.
+            // 현재 학기 수강생의 기말고사 점수 Strip Plot
+            if(document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point').length == 0){
+                continue;
+            }
+
+            // Plot을 저장하는 변수 생성
+            var scatter = document.getElementsByClassName('scatterlayer')[plt]
+            
+            // checkbox 가 클릭되면 순서대로 Group에 해당하는 Point들의 색을 변경해준다.
+            // checkbox[0] = A 그룹 = 0 curveNumber
+            // checkbox[1] = B 그룹 = 1 curveNumber 
+            // checkbox[2] = C 그룹 = 2 curveNumber 
+            // checkbox[3] = D 그룹 = 3 curveNumber 
+
+            for(ckbx=0; ckbx<checkboxed.length; ckbx++){
+                console.log('checkbox[', ckbx, ']')
+
+                if(checkboxed[ckbx].checked){
+                    console.log('checked')
+                    for(pnt=0; pnt<scatter.getElementsByClassName('scatter')[ckbx].getElementsByClassName('point').length;pnt++){
+                        console.log(String(scatter.getElementsByClassName('scatter')[ckbx].getElementsByClassName('point')[pnt].style['fill']))
+                        // fill: 점의 색상
+                        // stroke: 점의 테두리
+                        scatter.getElementsByClassName('scatter')[ckbx].getElementsByClassName('point')[pnt].style['fill'] = color_arr[ckbx]
+                        scatter.getElementsByClassName('scatter')[ckbx].getElementsByClassName('point')[pnt].style['stroke'] = color_arr[ckbx]
+                    } 
+                }   
+            }  
+        }
+    }
 }
 "
 
 cursor_disable_js = "
-  console.log('cursor default');
-  for(i=0; i<3; i++){
-    document.getElementsByClassName('cursor-crosshair')[i].style['cursor'] = 'default';
-  }
+console.log('cursor default');
+for(i=0; i<3; i++){
+  document.getElementsByClassName('cursor-crosshair')[i].style['cursor'] = 'default';
+}
 "
 
 
 
 click_event_maintain_js = "
 function(el, x){
+    // 적용 대상이 되는 Strip Plot들의 개수를 담는 변수 : plot_len
     var plot_len = document.getElementsByClassName('scatterlayer').length;
+    // Pop-up을 하면 Plot의 개수가 4개 추가 되므로, 최대 Plot의 개수가 6을 초과하게 되면 4를 뺴서 strip_plot들만의 개수를 추출한다.
     if(plot_len > 6){
         plot_len = plot_len - 4;
     }
     
     console.log('plot_len : ', String(plot_len))
+
+    // 첫번째 Plot은 SliderInput이 변경되어도 변하지 않기 떄문에 기준이 되는 Plot으로 설정
     var first_plot = document.getElementsByClassName('scatterlayer')[0];
+
+    // curve_num, point_num, temp_point는 기본값을 -1로 설정
+    // => 조건문에 사용
     var curve_num_mt = -1;
     var point_num_mt = -1;
     var temp_point = -1;
     
+    // 확대된 Point의 curveNumber, pointNumber를 찾아서 저장
     for(crv=0; crv<first_plot.getElementsByClassName('scatter').length; crv++){
         for(pnt=0; pnt<first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point').length; pnt++){
             var temp_point = first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point')[pnt];
@@ -462,31 +492,31 @@ function(el, x){
             }
         }
     }
+
     console.log('curve_num_mt : ', String(curve_num_mt));
     console.log('point_num_mt : ', String(point_num_mt));
     console.log('point_num_mt : ', String(curve_num_mt != -1));
     
+    // curve_num_mt가 -1이 아니면 => 1번 Plot에서 확대된 점이 있는 경우
+    // 다른 plot들에 대해서 확대된 점의 curveNumber와 pointNumber에 해당하는 point을 찾아서 같이 확대된 점으로 만든다.
     if(curve_num_mt != -1){
         console.log('curve_num_mt is not empty')
         for(plt=0; plt<plot_len; plt++){
+
             console.log('plot : ', String(plt))
+
+            // point의 개수가 0개인 Plot은 pass한다.
+            // 현재 학기 수강생의 기말고사 점수 Strip Plot
             if(document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point').length == 0){
                 continue;
             }
+
             console.log('plot_apply : ', String(plt))
+            // 다른 plot들에 대해서 확대된 점의 curveNumber와 pointNumber에 해당하는 point
             temp_point = document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('scatter')[curve_num_mt].getElementsByClassName('point')[point_num_mt];
+            // 점을 확대 한다.
             temp_point.setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
         }
     }
-    
-    
-    /*
-    if(curve_num != ''){
-        el.getElementsByClassName('scatter')[crv]
-        temp_point = el.getElementsByClassName('scatter')[crv].getElementsByClassName('point')[pnt];
-        temp_point.setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
-    }
-    */
-    
 }
 "
