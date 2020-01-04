@@ -30,7 +30,7 @@ shinyUI(fixedPage(
   titlePanel(h1(p(strong("Find me Find you")), align = "center")),
   
   # Description
-  fluidRow(column(width = 10, offset = 1,
+  fixedRow(column(width = 10, offset = 1,
            br(),
            p("본 화면은 나와 다른 학습자들이 어떻게 학습하는지를 확인할 수 있는 화면입니다."),
            p("나의 활동 및 성적을 지난학기 수강생들의 활동 및 성적, 또는 이번학기 수강생들의 활동 및 성적과 비교해 볼 수 있습니다. "),
@@ -91,7 +91,7 @@ shinyUI(fixedPage(
   
   # 시험 점수 Well Panel
   # Plot & 평균/표준편차
-  fluidRow(height = 300,
+  fixedRow(height = 300,
     column(width = 3, offset = 1,
       tags$style(type = "text/css", "#Mid_Test_Score_Summary { font-size: 10.7px; }
                                      #Final_Test_Score_Summary { font-size: 10.7px; }"),
@@ -139,7 +139,7 @@ shinyUI(fixedPage(
         ),
         
         # SliderInput
-        fluidRow(
+        fixedRow(
           column(width = 2, align = "center",
             div(style = "display:inline-block; padding-top: 30px; margin-left : -10px",
                 h4(p(strong("주차 선택")))

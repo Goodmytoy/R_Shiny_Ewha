@@ -315,6 +315,8 @@ function(el, x){
         var curve_num = data.points[0].curveNumber;
         var point_num = data.points[0].pointNumber;
         
+        var temp_point = ''
+        
         console.log('data: ', String(data));
         console.log('curve_num: ', String(curve_num));
         console.log('point_num: ', String(point_num));
@@ -342,17 +344,13 @@ function(el, x){
             if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
                 continue;
             }
-            if (plotly_div_arr[i].backup !== undefined) {
-                if ( plotly_div_arr[i].backup.curveNumber < document.getElementsByClassName('scatterlayer')[0].getElementsByClassName('scatter').length){
-                    console.log('plotly_div_arr[', i, '].backup curveNumber : ', plotly_div_arr[i].backup.curveNumber);
-                    console.log('plotly_div_arr[', i, '].backup point_num : ', plotly_div_arr[i].backup.pointNumber);    
-
-                    old_point_arr[0] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[plotly_div_arr[i].backup.curveNumber].getElementsByClassName('point')[plotly_div_arr[i].backup.pointNumber]
-                    if (old_point_arr[0] !== undefined) {
-                        old_point_arr[0].setAttribute('d', plotly_div_arr[i].backup.d);
-                    } 
-                }
-            } 
+            for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length; pnt++){
+              temp_point = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point')[pnt]
+              
+              if(temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z'){
+                temp_point.setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z')
+              }
+            }
         }
         
         for(i=0; i<plot_len; i++) {
@@ -373,4 +371,133 @@ function(el, x){
         }
     });
     }
+"
+
+
+color_change_js = "
+function(el, x){
+    console.log('Mode : ', document.getElementById('Mode').value)
+    if(document.getElementById('Mode').value == '지난 학기 수강생'){
+      var plot_len = document.getElementsByClassName('scatterlayer').length
+      if(plot_len > 6){
+          plot_len = plot_len - 4
+      }
+  
+      console.log('color_change')
+    
+
+      var checkboxed = document.getElementsByName('Grade_Compare_Group')
+      console.log('checkbox length: ', String(checkboxed.length))
+  
+      var color_arr = new Array(checkboxed.length)
+      var scatter = ''
+      color_arr[0] = 'rgb(102,176,226)'
+      color_arr[1] = 'rgb(255,189,55)'
+      color_arr[2] = 'rgb(127,108,171)'
+      color_arr[3] = 'rgb(158,200,110)'
+      
+      for(j=0; j<plot_len; j++){
+          if(document.getElementsByClassName('scatterlayer')[j].getElementsByClassName('point').length == 0){
+              continue;
+          }
+          scatter = document.getElementsByClassName('scatterlayer')[j]
+          
+          for(i=0; i<checkboxed.length; i++){
+          
+              console.log('checkbox[', i, ']')
+              
+              if(checkboxed[i].checked){
+                console.log('checked')
+                for(pnt=0; pnt<scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point').length;pnt++){
+                  console.log(String(scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill']))
+                  scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill'] = color_arr[i]
+                  scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['stroke'] = color_arr[i]
+                } 
+              }
+              
+              /*
+              if(checkboxed[i].checked){
+                  console.log('checked')
+                  for(pnt=0; pnt<scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point').length;pnt++){
+                      console.log(String(scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill']))
+                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill'] = color_arr[i]
+                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['stroke'] = color_arr[i]
+                  }     
+              } else {
+                  for(pnt=0; pnt<scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point').length;pnt++){
+                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['fill'] = 'rgb(192,192,192)'
+                      scatter.getElementsByClassName('scatter')[i].getElementsByClassName('point')[pnt].style['stroke'] = 'rgb(192,192,192)'
+                  }   
+              }
+              */
+          
+          }
+          
+      }
+      
+   }
+}
+"
+
+cursor_disable_js = "
+  function(el, x) {
+    console.log('cursor ' , String(getElementsByClassName('cursor-crosshair').length));
+    for(i=0; i<getElementsByClassName('cursor-crosshair').length; i++){
+      document.getElementsByClassName('cursor-crosshair')[i].style['cursor'] = 'default';
+    }
+  }
+"
+
+
+
+click_event_maintain_js = "
+function(el, x){
+    var plot_len = document.getElementsByClassName('scatterlayer').length;
+    if(plot_len > 6){
+        plot_len = plot_len - 4;
+    }
+    
+    console.log('plot_len : ', String(plot_len))
+    var first_plot = document.getElementsByClassName('scatterlayer')[0];
+    var curve_num_mt = -1;
+    var point_num_mt = -1;
+    var temp_point = -1;
+    
+    for(crv=0; crv<first_plot.getElementsByClassName('scatter').length; crv++){
+        for(pnt=0; pnt<first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point').length; pnt++){
+            var temp_point = first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point')[pnt];
+            if(temp_point.attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
+                curve_num_mt = crv;
+                point_num_mt = pnt;
+
+            }
+        }
+    }
+    console.log('curve_num_mt : ', String(curve_num_mt));
+    console.log('point_num_mt : ', String(point_num_mt));
+    console.log('point_num_mt : ', String(curve_num_mt != -1));
+    
+    if(curve_num_mt != -1){
+        console.log('curve_num_mt is not empty')
+        for(plt=0; plt<plot_len; plt++){
+            console.log('plot : ', String(plt))
+            if(document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point').length == 0){
+                continue;
+            }
+            console.log('plot_apply : ', String(plt))
+            temp_point = document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('scatter')[curve_num_mt].getElementsByClassName('point')[point_num_mt];
+            temp_point.setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
+        }
+    }
+    
+    
+    /*
+    if(curve_num != ''){
+        el.getElementsByClassName('scatter')[crv]
+        temp_point = el.getElementsByClassName('scatter')[crv].getElementsByClassName('point')[pnt];
+        temp_point.setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
+    }
+    */
+    
+}
 "

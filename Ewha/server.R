@@ -51,7 +51,7 @@ showtext_opts(dpi = 112)
 
 # 3. 데이터 Loading ----------------------------------------------
 # Set My Data(x11, x34, x43)
-my_data = "x34"
+my_data = "x25"
 jitter_value = 0
 
 # Load Data
@@ -385,10 +385,25 @@ shinyServer(function(input, output) {
                                    y_max = 100,
                                    jitter = jitter_value)
     
-    
-    test_plot %>% 
+    test_plot %>% layout(autosize = T) %>%
       config(displayModeBar = F) %>%
-      onRender(click_event_js)
+      onRender(click_event_js) %>%
+      onRender(click_event_maintain_js) %>%
+    onRender(color_change_js)
+    # 
+    # if(input$Mode == "지난 학기 수강생"){
+    #   test_plot %>% layout(autosize = T) %>%
+    #     config(displayModeBar = F) %>%
+    #       onRender(click_event_js) %>%
+    #         onRender(click_event_maintain_js)
+              # onRender(color_change_js)
+    # } else {
+    #   test_plot %>% layout(autosize = T) %>%
+    #     config(displayModeBar = F) %>%
+    #       onRender(click_event_js) %>%
+    #         onRender(click_event_maintain_js)
+    # }
+
   })
   
   
@@ -419,9 +434,25 @@ shinyServer(function(input, output) {
                                   y_max = max_count,
                                   jitter = jitter_value)
     
-    qna_plot %>% 
-      config(displayModeBar = F) %>%
-      onRender(click_event_js)
+      qna_plot %>% layout(autosize = T) %>%
+        config(displayModeBar = F) %>%
+        onRender(click_event_js) %>%
+        onRender(click_event_maintain_js)  %>%
+    onRender(color_change_js)
+      
+    # if(input$Mode == "지난 학기 수강생"){
+    #   qna_plot %>% layout(autosize = T) %>%
+    #     config(displayModeBar = F) %>%
+    #     onRender(click_event_js) %>%
+    #     onRender(click_event_maintain_js)
+    #     onRender(color_change_js)
+    # } else {
+    #   qna_plot %>% layout(autosize = T) %>%
+    #     config(displayModeBar = F) %>%
+    #     onRender(click_event_js) %>%
+    #     onRender(click_event_maintain_js)
+    # }
+    
   })
   
   
@@ -453,71 +484,57 @@ shinyServer(function(input, output) {
                                    jitter = jitter_value,
                                    browser = F)
     
-    team_plot %>% 
+    team_plot %>% layout(autosize = T) %>%
       config(displayModeBar = F) %>%
-      onRender(click_event_js)  
+      onRender(click_event_js) %>%
+      onRender(click_event_maintain_js)  %>%
+    onRender(color_change_js)
     
+    # if(input$Mode == "지난 학기 수강생"){
+    #   team_plot %>% layout(autosize = T) %>%
+    #     config(displayModeBar = F) %>%
+    #     onRender(click_event_js) %>%
+    #     onRender(click_event_maintain_js) %>%
+    #     onRender(color_change_js)
+    # } else {
+    #   team_plot %>% layout(autosize = T) %>%
+    #     config(displayModeBar = F) %>%
+    #     onRender(click_event_js) %>%
+    #     onRender(click_event_maintain_js)
+    # }
     
   })
   
   
   #
   observe({
-    if('A' %in% input$Grade_Compare_Group){
-      shinyjs::runjs(fn_change_color_js("rgb(102,176,226)", 0))
-    } else if(!'A' %in% input$Grade_Compare_Group) {
-      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 0))
-    }
-
-    if('B' %in% input$Grade_Compare_Group){
-      shinyjs::runjs(fn_change_color_js("rgb(255,189,55)", 1))
-    } else if(!'B' %in% input$Grade_Compare_Group) {
-      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 1))
-    }
-
-    if('C' %in% input$Grade_Compare_Group){
-      shinyjs::runjs(fn_change_color_js("rgb(127,108,171)", 2))
-    } else if(!'C' %in% input$Grade_Compare_Group) {
-      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 2))
-    }
-
-    if('D' %in% input$Grade_Compare_Group){
-      shinyjs::runjs(fn_change_color_js("rgb(158,200,110)", 3))
-    } else if(!'D' %in% input$Grade_Compare_Group) {
-      shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 3))
+    if(input$Mode == "지난 학기 수강생"){
+      if('A' %in% input$Grade_Compare_Group){
+        shinyjs::runjs(fn_change_color_js("rgb(102,176,226)", 0))
+      } else if(!'A' %in% input$Grade_Compare_Group) {
+        shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 0))
+      }
+      
+      if('B' %in% input$Grade_Compare_Group){
+        shinyjs::runjs(fn_change_color_js("rgb(255,189,55)", 1))
+      } else if(!'B' %in% input$Grade_Compare_Group) {
+        shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 1))
+      }
+      
+      if('C' %in% input$Grade_Compare_Group){
+        shinyjs::runjs(fn_change_color_js("rgb(127,108,171)", 2))
+      } else if(!'C' %in% input$Grade_Compare_Group) {
+        shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 2))
+      }
+      
+      if('D' %in% input$Grade_Compare_Group){
+        shinyjs::runjs(fn_change_color_js("rgb(158,200,110)", 3))
+      } else if(!'D' %in% input$Grade_Compare_Group) {
+        shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 3))
+      }
     }
   })
-  # 
-  # # 
-  # observeEvent(
-  #   input$Select_Week, {
-  #     if(input$Mode == "지난 학기 수강생"){
-  #       if('A' %in% input$Grade_Compare_Group){
-  #         shinyjs::runjs(fn_change_color_js("rgb(102,176,226)", 0))
-  #       } else if(!'A' %in% input$Grade_Compare_Group) {
-  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 0))
-  #       }
-  #       
-  #       if('B' %in% input$Grade_Compare_Group){
-  #         shinyjs::runjs(fn_change_color_js("rgb(255,189,55)", 1))
-  #       } else if(!'B' %in% input$Grade_Compare_Group) {
-  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 1))
-  #       }
-  #       
-  #       if('C' %in% input$Grade_Compare_Group){
-  #         shinyjs::runjs(fn_change_color_js("rgb(127,108,171)", 2))
-  #       } else if(!'C' %in% input$Grade_Compare_Group) {
-  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 2))
-  #       }
-  #       
-  #       if('D' %in% input$Grade_Compare_Group){
-  #         shinyjs::runjs(fn_change_color_js("rgb(158,200,110)", 3))
-  #       } else if(!'D' %in% input$Grade_Compare_Group) {
-  #         shinyjs::runjs(fn_change_color_js("rgb(192,192,192)", 3))
-  #       }
-  #     }
-  #   }
-  # )
+
   
   
   # 5.1.3. Slider Input UI ----------------------------------------------
