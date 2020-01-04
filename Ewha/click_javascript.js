@@ -63,7 +63,8 @@ function(el, x){
 
             // 이미 확대된 점을 클릭한 경우 다시 축소 시킨다.
             // 축소하는 작업만 하고 이후의 작업들을 수행하지 않기 위해 continue를 사용
-            if(point_arr[plt].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
+            if((point_arr[plt].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z') ||
+               (point_arr[plt].attributes['d'].value == 'M 10 0 A 10 10 0 1 1 0 -10 A 10 10 0 0 1 10 0 Z')){
                 point_arr[plt].setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z');
                 continue;
             } else {
@@ -72,7 +73,9 @@ function(el, x){
                 for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point').length; pnt++){
                     temp_point = document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point')[pnt];
                     // 나의 점수 제외
-                    if(temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z'){
+                    
+                    if((temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z') &&
+                       (temp_point.attributes['d'].value != 'M 7.37 0 L 0 7.37 L -7.37 0 L 0 -7.37 Z')){
                         temp_point.setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z')
                     }
                 }

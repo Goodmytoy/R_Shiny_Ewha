@@ -34,8 +34,8 @@ library(shinyjs)
 
 # 1. 경로 설정 ----------------------------------------------
 # 데이터 및 functions_script 경로 지정
-base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
-# base_path = "."
+# base_path = "C:/Users/seho1/Documents/R_Shiny_Ewha/Ewha/"
+base_path = "."
 source(paste0(base_path,"/functions_script.R"), encoding = "UTF-8")
 
 
@@ -50,8 +50,8 @@ showtext_opts(dpi = 112)
 
 
 # 3. 데이터 Loading ----------------------------------------------
-# Set My Data(x11, x34, x43)
-my_data = "x11"
+# Set My Data(x11, x25, x34, x43)
+my_data = "x25"
 jitter_value = 0
 
 # Load Data
@@ -216,9 +216,9 @@ long_last_weekly_score[, `팀플 댓글 수 평균 최저` := min(`팀플 댓글
 
 
 # 성적등급에 순서를 지정하기 위해 Factor로 지정한다.
-long_this_test_score$`성적등급` = factor(long_this_test_score$`성적등급`, levels = c("A", "B", "C", "D"))
+# long_this_test_score$`성적등급` = factor(long_this_test_score$`성적등급`, levels = c("A", "B", "C", "D"))
 long_last_test_score$`성적등급` = factor(long_last_test_score$`성적등급`, levels = c("A", "B", "C", "D"))
-long_this_weekly_score$`성적등급` = factor(long_this_weekly_score$`성적등급`, levels = c("A", "B", "C", "D"))
+# long_this_weekly_score$`성적등급` = factor(long_this_weekly_score$`성적등급`, levels = c("A", "B", "C", "D"))
 long_last_weekly_score$`성적등급` = factor(long_last_weekly_score$`성적등급`, levels = c("A", "B", "C", "D"))
 
 

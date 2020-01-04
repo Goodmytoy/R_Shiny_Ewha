@@ -21,10 +21,10 @@ function(el, x){
     for(crv=0; crv<first_plot.getElementsByClassName('scatter').length; crv++){
         for(pnt=0; pnt<first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point').length; pnt++){
             var temp_point = first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point')[pnt];
-            if(temp_point.attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
+            if((temp_point.attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z') || 
+               (temp_point.attributes['d'].value == 'M 10 0 A 10 10 0 1 1 0 -10 A 10 10 0 0 1 10 0 Z')){
                 curve_num_mt = crv;
                 point_num_mt = pnt;
-
             }
         }
     }

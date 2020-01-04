@@ -346,16 +346,16 @@ function(el, x){
         // 2) 나의 점수를 제외하고는 전체 point를 작게 조정 (다른 점을 클릭할 떄 기존의 점을 작게 만들기 위해)
         // 3) 1)에서 저장한 point의 크기를 확대 시킨다.
         
-        for(i=0; i<plot_len; i++) {
+        for(plt=0; plt<plot_len; plt++) {
             // point의 개수가 0개인 Plot은 pass한다.
             // 현재 학기 수강생의 기말고사 점수 Strip Plot
-            if(document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length == 0){
+            if(document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point').length == 0){
                 continue;
             }
             
             console.log('curve_num: ', String(curve_num));
             // 각 Plot들에서 Click한 점이 가지고 있는 curveNumber, pointNumber에 해당하는 point 값을 추출하여 point_arr에 저장
-            point_arr[i] = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[point_num];
+            point_arr[plt] = document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('scatter')[curve_num].getElementsByClassName('point')[point_num];
             
 
 
@@ -365,21 +365,24 @@ function(el, x){
 
             // 이미 확대된 점을 클릭한 경우 다시 축소 시킨다.
             // 축소하는 작업만 하고 이후의 작업들을 수행하지 않기 위해 continue를 사용
-            if(point_arr[i].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
-                point_arr[i].setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z');
+            if((point_arr[plt].attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z') ||
+               (point_arr[plt].attributes['d'].value == 'M 10 0 A 10 10 0 1 1 0 -10 A 10 10 0 0 1 10 0 Z')){
+                point_arr[plt].setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z');
                 continue;
             } else {
                 // 전체 point들의 크기를 작게 조절한다.
                 // 나의 점수에 해당하는 point만을 제외하고 적용
-                for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point').length; pnt++){
-                    temp_point = document.getElementsByClassName('scatterlayer')[i].getElementsByClassName('point')[pnt];
+                for(pnt=0; pnt<document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point').length; pnt++){
+                    temp_point = document.getElementsByClassName('scatterlayer')[plt].getElementsByClassName('point')[pnt];
                     // 나의 점수 제외
-                    if(temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z'){
+                    
+                    if((temp_point.attributes['d'].value != 'M7.37,0L0,7.37L-7.37,0L0,-7.37Z') &&
+                       (temp_point.attributes['d'].value != 'M 7.37 0 L 0 7.37 L -7.37 0 L 0 -7.37 Z')){
                         temp_point.setAttribute('d', 'M2.46,0A2.46,2.46 0 1,1 0,-2.46A2.46,2.46 0 0,1 2.46,0Z')
                     }
                 }
                 // 점을 확대 한다.
-                point_arr[i].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
+                point_arr[plt].setAttribute('d', 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z');
             }
         }
     });
@@ -485,7 +488,8 @@ function(el, x){
     for(crv=0; crv<first_plot.getElementsByClassName('scatter').length; crv++){
         for(pnt=0; pnt<first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point').length; pnt++){
             var temp_point = first_plot.getElementsByClassName('scatter')[crv].getElementsByClassName('point')[pnt];
-            if(temp_point.attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z'){
+            if((temp_point.attributes['d'].value == 'M10,0A10,10 0 1,1 0,-10A10,10 0 0,1 10,0Z') || 
+               (temp_point.attributes['d'].value == 'M 10 0 A 10 10 0 1 1 0 -10 A 10 10 0 0 1 10 0 Z')){
                 curve_num_mt = crv;
                 point_num_mt = pnt;
 
