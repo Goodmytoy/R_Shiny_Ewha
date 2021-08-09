@@ -1,8 +1,6 @@
 # R_Shiny_Ewha
 R Shiny Dashboard (Ewha Education Engineering)
 
-#### 수정연습
-
 ## Shiny를 활용한 대시보드 생성
 
 ### [주요기능]
@@ -12,5 +10,3 @@ R Shiny Dashboard (Ewha Education Engineering)
 ### [예시 화면]
 https://sehopark.shinyapps.io/Ewha_x11/
 
-
-TEST 222
